@@ -4,16 +4,30 @@
     <meta charset="UTF-8" />
     <title>Meta Travel — Configurações</title>
     <style>
-      body { font-family: system-ui, sans-serif; max-width: 480px; margin: 24px auto; padding: 0 16px; }
+      body { font-family: system-ui, sans-serif; max-width: 480px; margin: 24px auto; padding: 0 16px; line-height: 1.5; }
+      h1 { font-size: 1.25rem; }
       label { display: block; margin-bottom: 4px; font-weight: 600; }
-      input { width: 100%; padding: 8px; margin-bottom: 16px; }
-      button { padding: 10px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; }
+      input[type="url"], input[type="text"] { width: 100%; padding: 8px; margin-bottom: 12px; box-sizing: border-box; }
+      .hint { color: #64748b; font-size: 0.9rem; margin-bottom: 16px; }
+      button { padding: 10px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+      #status { margin-top: 12px; color: #16a34a; }
     </style>
   </head>
   <body>
     <h1>Configurações Meta Travel</h1>
+    <p class="hint">
+      O planejador funciona <strong>100% na extensão</strong> — clique no ícone para abrir o painel lateral.
+      A API remota abaixo é opcional (para sincronizar capturas com servidor local).
+    </p>
+
+    <label>
+      <input type="checkbox" id="use-remote" />
+      Enviar capturas para API remota (opcional)
+    </label>
+
     <label for="api-url">URL da API</label>
     <input id="api-url" type="url" placeholder="http://localhost:3000/api" />
+
     <button id="save">Salvar</button>
     <p id="status"></p>
     <script src="options.js"></script>

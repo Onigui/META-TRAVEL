@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meta Travel</title>
+    <link rel="stylesheet" href="planner.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div>
+          <h1>Meta Travel</h1>
+          <p id="api-status" class="muted">Planejador local — sem site</p>
+        </div>
+      </header>
+
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="plan">Planejar</button>
+        <button type="button" class="tab" data-tab="captures">Capturas <span id="captures-badge" class="badge hidden">0</span></button>
+        <button type="button" class="tab" data-tab="partners">Parceiros</button>
+      </nav>
+
+      <section id="panel-plan" class="tab-panel">
+        <form id="search-form" class="search-form">
+          <select id="destination" required>
+            <option value="">Destino</option>
+          </select>
+          <div class="row-2">
+            <input id="origin" type="text" value="GRU" placeholder="Origem" maxlength="3" />
+            <input id="departure-date" type="date" />
+          </div>
+          <div class="row-2">
+            <input id="passengers" type="number" min="1" max="9" value="2" title="Passageiros" />
+            <input id="nights" type="number" min="1" max="30" value="5" title="Noites" />
+          </div>
+          <button type="submit" class="btn-primary">Buscar opções</button>
+        </form>
+
+        <div id="status" class="status hidden"></div>
+
+        <div id="results" class="hidden">
+          <details open class="block">
+            <summary>Voos</summary>
+            <div id="flights-list" class="options-list"></div>
+          </details>
+          <details open class="block">
+            <summary>Hotéis</summary>
+            <div id="hotels-list" class="options-list"></div>
+          </details>
+          <details class="block">
+            <summary>Carros</summary>
+            <div id="cars-list" class="options-list"></div>
+          </details>
+          <details class="block">
+            <summary>All inclusive</summary>
+            <div id="allinclusive-list" class="options-list"></div>
+          </details>
+        </div>
+
+        <section id="summary" class="block summary hidden">
+          <h2>Sua viagem</h2>
+          <div id="summary-content"></div>
+          <div class="actions">
+            <button id="build-btn" type="button" class="btn-primary">Calcular com descontos</button>
+            <button id="checkout-btn" type="button" class="btn-checkout hidden">Reservar tudo →</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="panel-captures" class="tab-panel hidden">
+        <p class="muted small">Preços salvos de LATAM, GOL, Booking e outros sites enquanto você navega.</p>
+        <div id="captures-list" class="captures-list"></div>
+        <button type="button" id="clear-captures" class="btn-ghost">Limpar capturas</button>
+      </section>
+
+      <section id="panel-partners" class="tab-panel hidden">
+        <p class="muted small">Descontos aplicados automaticamente ao montar a viagem.</p>
+        <div id="partners-list" class="partners-list"></div>
+      </section>
+    </div>
+
+    <div id="checkout-modal" class="checkout-modal hidden" role="dialog">
+      <div class="checkout-panel">
+        <div class="checkout-header">
+          <h2>Checkout unificado</h2>
+          <button type="button" id="checkout-close" aria-label="Fechar">×</button>
+        </div>
+        <div id="checkout-progress" class="checkout-progress"></div>
+        <div id="checkout-steps" class="checkout-steps"></div>
+        <div class="checkout-footer">
+          <button type="button" id="checkout-start" class="btn-primary">Iniciar reservas</button>
+          <button type="button" id="checkout-next" class="btn-checkout hidden">Concluí — próximo</button>
+          <button type="button" id="checkout-open-all" class="btn-ghost">Abrir todos</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="planner.js"></script>
+  </body>
+</html>
