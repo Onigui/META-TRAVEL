@@ -1,0 +1,709 @@
+[
+  {
+    "airport": "GRU",
+    "city": "São Paulo",
+    "country": "Brasil",
+    "lat": -23.43,
+    "lon": -46.47,
+    "priceIndex": 1
+  },
+  {
+    "airport": "CGH",
+    "city": "São Paulo",
+    "country": "Brasil",
+    "lat": -23.63,
+    "lon": -46.66,
+    "priceIndex": 1
+  },
+  {
+    "airport": "GIG",
+    "city": "Rio de Janeiro",
+    "country": "Brasil",
+    "lat": -22.81,
+    "lon": -43.25,
+    "priceIndex": 1
+  },
+  {
+    "airport": "SDU",
+    "city": "Rio de Janeiro",
+    "country": "Brasil",
+    "lat": -22.91,
+    "lon": -43.16,
+    "priceIndex": 1
+  },
+  {
+    "airport": "BSB",
+    "city": "Brasília",
+    "country": "Brasil",
+    "lat": -15.87,
+    "lon": -47.92,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "CNF",
+    "city": "Belo Horizonte",
+    "country": "Brasil",
+    "lat": -19.62,
+    "lon": -43.97,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "POA",
+    "city": "Porto Alegre",
+    "country": "Brasil",
+    "lat": -29.99,
+    "lon": -51.17,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "CWB",
+    "city": "Curitiba",
+    "country": "Brasil",
+    "lat": -25.53,
+    "lon": -49.17,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "SSA",
+    "city": "Salvador",
+    "country": "Brasil",
+    "lat": -12.91,
+    "lon": -38.33,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "REC",
+    "city": "Recife",
+    "country": "Brasil",
+    "lat": -8.13,
+    "lon": -34.92,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "FOR",
+    "city": "Fortaleza",
+    "country": "Brasil",
+    "lat": -3.78,
+    "lon": -38.53,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "MAO",
+    "city": "Manaus",
+    "country": "Brasil",
+    "lat": -3.04,
+    "lon": -60.05,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "FLN",
+    "city": "Florianópolis",
+    "country": "Brasil",
+    "lat": -27.67,
+    "lon": -48.55,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "NAT",
+    "city": "Natal",
+    "country": "Brasil",
+    "lat": -5.91,
+    "lon": -35.25,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "MIA",
+    "city": "Miami",
+    "country": "EUA",
+    "lat": 25.79,
+    "lon": -80.29,
+    "priceIndex": 1.4,
+    "bookingDestId": "-1456928"
+  },
+  {
+    "airport": "JFK",
+    "city": "Nova York",
+    "country": "EUA",
+    "lat": 40.64,
+    "lon": -73.78,
+    "priceIndex": 1.6
+  },
+  {
+    "airport": "EWR",
+    "city": "Nova York",
+    "country": "EUA",
+    "lat": 40.69,
+    "lon": -74.17,
+    "priceIndex": 1.55
+  },
+  {
+    "airport": "LAX",
+    "city": "Los Angeles",
+    "country": "EUA",
+    "lat": 33.94,
+    "lon": -118.41,
+    "priceIndex": 1.5
+  },
+  {
+    "airport": "MCO",
+    "city": "Orlando",
+    "country": "EUA",
+    "lat": 28.43,
+    "lon": -81.31,
+    "priceIndex": 1.2
+  },
+  {
+    "airport": "LAS",
+    "city": "Las Vegas",
+    "country": "EUA",
+    "lat": 36.08,
+    "lon": -115.15,
+    "priceIndex": 1.3
+  },
+  {
+    "airport": "SFO",
+    "city": "San Francisco",
+    "country": "EUA",
+    "lat": 37.62,
+    "lon": -122.38,
+    "priceIndex": 1.55
+  },
+  {
+    "airport": "ORD",
+    "city": "Chicago",
+    "country": "EUA",
+    "lat": 41.97,
+    "lon": -87.91,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "CUN",
+    "city": "Cancún",
+    "country": "México",
+    "lat": 21.04,
+    "lon": -86.85,
+    "priceIndex": 1.1,
+    "bookingDestId": "-1653169",
+    "resort": true
+  },
+  {
+    "airport": "MEX",
+    "city": "Cidade do México",
+    "country": "México",
+    "lat": 19.44,
+    "lon": -99.07,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "CDG",
+    "city": "Paris",
+    "country": "França",
+    "lat": 49.01,
+    "lon": 2.55,
+    "priceIndex": 1.5
+  },
+  {
+    "airport": "ORY",
+    "city": "Paris",
+    "country": "França",
+    "lat": 48.73,
+    "lon": 2.37,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "LHR",
+    "city": "Londres",
+    "country": "Reino Unido",
+    "lat": 51.47,
+    "lon": -0.46,
+    "priceIndex": 1.55
+  },
+  {
+    "airport": "LGW",
+    "city": "Londres",
+    "country": "Reino Unido",
+    "lat": 51.15,
+    "lon": -0.19,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "LIS",
+    "city": "Lisboa",
+    "country": "Portugal",
+    "lat": 38.77,
+    "lon": -9.13,
+    "priceIndex": 1.15,
+    "bookingDestId": "-2167973"
+  },
+  {
+    "airport": "OPO",
+    "city": "Porto",
+    "country": "Portugal",
+    "lat": 41.24,
+    "lon": -8.68,
+    "priceIndex": 1.05
+  },
+  {
+    "airport": "MAD",
+    "city": "Madrid",
+    "country": "Espanha",
+    "lat": 40.49,
+    "lon": -3.57,
+    "priceIndex": 1.2
+  },
+  {
+    "airport": "BCN",
+    "city": "Barcelona",
+    "country": "Espanha",
+    "lat": 41.3,
+    "lon": 2.08,
+    "priceIndex": 1.25
+  },
+  {
+    "airport": "FCO",
+    "city": "Roma",
+    "country": "Itália",
+    "lat": 41.8,
+    "lon": 12.25,
+    "priceIndex": 1.3
+  },
+  {
+    "airport": "MXP",
+    "city": "Milão",
+    "country": "Itália",
+    "lat": 45.63,
+    "lon": 8.72,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "AMS",
+    "city": "Amsterdã",
+    "country": "Holanda",
+    "lat": 52.31,
+    "lon": 4.77,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "FRA",
+    "city": "Frankfurt",
+    "country": "Alemanha",
+    "lat": 50.04,
+    "lon": 8.56,
+    "priceIndex": 1.3
+  },
+  {
+    "airport": "BER",
+    "city": "Berlim",
+    "country": "Alemanha",
+    "lat": 52.36,
+    "lon": 13.51,
+    "priceIndex": 1.2
+  },
+  {
+    "airport": "ZRH",
+    "city": "Zurique",
+    "country": "Suíça",
+    "lat": 47.46,
+    "lon": 8.55,
+    "priceIndex": 1.7
+  },
+  {
+    "airport": "VIE",
+    "city": "Viena",
+    "country": "Áustria",
+    "lat": 48.11,
+    "lon": 16.57,
+    "priceIndex": 1.25
+  },
+  {
+    "airport": "ATH",
+    "city": "Atenas",
+    "country": "Grécia",
+    "lat": 37.94,
+    "lon": 23.94,
+    "priceIndex": 1.1
+  },
+  {
+    "airport": "IST",
+    "city": "Istambul",
+    "country": "Turquia",
+    "lat": 41.26,
+    "lon": 28.74,
+    "priceIndex": 1
+  },
+  {
+    "airport": "DXB",
+    "city": "Dubai",
+    "country": "Emirados Árabes",
+    "lat": 25.25,
+    "lon": 55.36,
+    "priceIndex": 1.4
+  },
+  {
+    "airport": "DOH",
+    "city": "Doha",
+    "country": "Catar",
+    "lat": 25.27,
+    "lon": 51.61,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "NRT",
+    "city": "Tóquio",
+    "country": "Japão",
+    "lat": 35.76,
+    "lon": 140.39,
+    "priceIndex": 1.5
+  },
+  {
+    "airport": "HND",
+    "city": "Tóquio",
+    "country": "Japão",
+    "lat": 35.55,
+    "lon": 139.78,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "ICN",
+    "city": "Seul",
+    "country": "Coreia do Sul",
+    "lat": 37.46,
+    "lon": 126.44,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "BKK",
+    "city": "Bangkok",
+    "country": "Tailândia",
+    "lat": 13.69,
+    "lon": 100.75,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "SIN",
+    "city": "Singapura",
+    "country": "Singapura",
+    "lat": 1.36,
+    "lon": 103.99,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "DPS",
+    "city": "Bali",
+    "country": "Indonésia",
+    "lat": -8.75,
+    "lon": 115.17,
+    "priceIndex": 0.9,
+    "bookingDestId": "-2672237",
+    "resort": true
+  },
+  {
+    "airport": "SYD",
+    "city": "Sydney",
+    "country": "Austrália",
+    "lat": -33.95,
+    "lon": 151.18,
+    "priceIndex": 1.4
+  },
+  {
+    "airport": "MEL",
+    "city": "Melbourne",
+    "country": "Austrália",
+    "lat": -37.67,
+    "lon": 144.84,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "AKL",
+    "city": "Auckland",
+    "country": "Nova Zelândia",
+    "lat": -37.01,
+    "lon": 174.79,
+    "priceIndex": 1.3
+  },
+  {
+    "airport": "EZE",
+    "city": "Buenos Aires",
+    "country": "Argentina",
+    "lat": -34.82,
+    "lon": -58.54,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "SCL",
+    "city": "Santiago",
+    "country": "Chile",
+    "lat": -33.39,
+    "lon": -70.79,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "BOG",
+    "city": "Bogotá",
+    "country": "Colômbia",
+    "lat": 4.7,
+    "lon": -74.15,
+    "priceIndex": 0.8
+  },
+  {
+    "airport": "LIM",
+    "city": "Lima",
+    "country": "Peru",
+    "lat": -12.02,
+    "lon": -77.11,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "MVD",
+    "city": "Montevidéu",
+    "country": "Uruguai",
+    "lat": -34.84,
+    "lon": -56.03,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "PTY",
+    "city": "Panamá",
+    "country": "Panamá",
+    "lat": 9.07,
+    "lon": -79.38,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "SJO",
+    "city": "San José",
+    "country": "Costa Rica",
+    "lat": 9.99,
+    "lon": -84.21,
+    "priceIndex": 1,
+    "resort": true
+  },
+  {
+    "airport": "HAV",
+    "city": "Havana",
+    "country": "Cuba",
+    "lat": 22.99,
+    "lon": -82.41,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "PUJ",
+    "city": "Punta Cana",
+    "country": "Rep. Dominicana",
+    "lat": 18.57,
+    "lon": -68.36,
+    "priceIndex": 1.1,
+    "resort": true
+  },
+  {
+    "airport": "CPT",
+    "city": "Cidade do Cabo",
+    "country": "África do Sul",
+    "lat": -33.97,
+    "lon": 18.6,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "JNB",
+    "city": "Joanesburgo",
+    "country": "África do Sul",
+    "lat": -26.14,
+    "lon": 28.24,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "CAI",
+    "city": "Cairo",
+    "country": "Egito",
+    "lat": 30.12,
+    "lon": 31.41,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "CMN",
+    "city": "Casablanca",
+    "country": "Marrocos",
+    "lat": 33.37,
+    "lon": -7.59,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "DEL",
+    "city": "Nova Delhi",
+    "country": "Índia",
+    "lat": 28.56,
+    "lon": 77.1,
+    "priceIndex": 0.75
+  },
+  {
+    "airport": "BOM",
+    "city": "Mumbai",
+    "country": "Índia",
+    "lat": 19.09,
+    "lon": 72.87,
+    "priceIndex": 0.8
+  },
+  {
+    "airport": "PEK",
+    "city": "Pequim",
+    "country": "China",
+    "lat": 40.08,
+    "lon": 116.58,
+    "priceIndex": 1.1
+  },
+  {
+    "airport": "PVG",
+    "city": "Xangai",
+    "country": "China",
+    "lat": 31.14,
+    "lon": 121.81,
+    "priceIndex": 1.15
+  },
+  {
+    "airport": "HKG",
+    "city": "Hong Kong",
+    "country": "China",
+    "lat": 22.31,
+    "lon": 113.91,
+    "priceIndex": 1.4
+  },
+  {
+    "airport": "TPE",
+    "city": "Taipei",
+    "country": "Taiwan",
+    "lat": 25.08,
+    "lon": 121.23,
+    "priceIndex": 1.2
+  },
+  {
+    "airport": "YYZ",
+    "city": "Toronto",
+    "country": "Canadá",
+    "lat": 43.68,
+    "lon": -79.63,
+    "priceIndex": 1.25
+  },
+  {
+    "airport": "YVR",
+    "city": "Vancouver",
+    "country": "Canadá",
+    "lat": 49.19,
+    "lon": -123.18,
+    "priceIndex": 1.3
+  },
+  {
+    "airport": "YUL",
+    "city": "Montreal",
+    "country": "Canadá",
+    "lat": 45.47,
+    "lon": -73.75,
+    "priceIndex": 1.2
+  },
+  {
+    "airport": "DUB",
+    "city": "Dublin",
+    "country": "Irlanda",
+    "lat": 53.43,
+    "lon": -6.25,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "CPH",
+    "city": "Copenhague",
+    "country": "Dinamarca",
+    "lat": 55.62,
+    "lon": 12.66,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "OSL",
+    "city": "Oslo",
+    "country": "Noruega",
+    "lat": 60.19,
+    "lon": 11.1,
+    "priceIndex": 1.6
+  },
+  {
+    "airport": "ARN",
+    "city": "Estocolmo",
+    "country": "Suécia",
+    "lat": 59.65,
+    "lon": 17.93,
+    "priceIndex": 1.45
+  },
+  {
+    "airport": "HEL",
+    "city": "Helsinque",
+    "country": "Finlândia",
+    "lat": 60.32,
+    "lon": 24.96,
+    "priceIndex": 1.35
+  },
+  {
+    "airport": "PRG",
+    "city": "Praga",
+    "country": "República Tcheca",
+    "lat": 50.1,
+    "lon": 14.26,
+    "priceIndex": 1.05
+  },
+  {
+    "airport": "WAW",
+    "city": "Varsóvia",
+    "country": "Polônia",
+    "lat": 52.17,
+    "lon": 20.97,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "BUD",
+    "city": "Budapeste",
+    "country": "Hungria",
+    "lat": 47.43,
+    "lon": 19.26,
+    "priceIndex": 0.95
+  },
+  {
+    "airport": "KRK",
+    "city": "Cracóvia",
+    "country": "Polônia",
+    "lat": 50.08,
+    "lon": 19.78,
+    "priceIndex": 0.9
+  },
+  {
+    "airport": "RAK",
+    "city": "Marrakech",
+    "country": "Marrocos",
+    "lat": 31.61,
+    "lon": -8.04,
+    "priceIndex": 0.85
+  },
+  {
+    "airport": "SEZ",
+    "city": "Seychelles",
+    "country": "Seychelles",
+    "lat": -4.67,
+    "lon": 55.52,
+    "priceIndex": 1.5,
+    "resort": true
+  },
+  {
+    "airport": "MLE",
+    "city": "Maldivas",
+    "country": "Maldivas",
+    "lat": 4.19,
+    "lon": 73.53,
+    "priceIndex": 1.8,
+    "resort": true
+  },
+  {
+    "airport": "MRU",
+    "city": "Maurício",
+    "country": "Maurício",
+    "lat": -20.43,
+    "lon": 57.68,
+    "priceIndex": 1.4,
+    "resort": true
+  }
+]

@@ -27,15 +27,21 @@ function createRemoteApi(base) {
     mode: 'remote',
     getStatus: () => request('/status'),
     getDestinations: () => request('/destinations'),
+    searchPlaces: (q) => request(`/places?q=${encodeURIComponent(q || '')}`),
     getPartners: () => request('/partners'),
     search: (params) => {
       const q = new URLSearchParams({
-        destination: params.destinationId,
-        origin: params.origin || 'GRU',
+        destinationCity: params.destinationCity || '',
+        destinationCountry: params.destinationCountry || '',
+        destinationAirport: params.destinationAirport || '',
+        originCity: params.originCity || '',
+        originCountry: params.originCountry || '',
+        originAirport: params.originAirport || '',
         passengers: params.passengers || 1,
         guests: params.guests || 2,
         nights: params.nights || 5,
         departureDate: params.departureDate || '',
+        returnDate: params.returnDate || '',
       });
       return request(`/search?${q}`);
     },

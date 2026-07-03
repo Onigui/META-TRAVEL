@@ -1,4 +1,5 @@
 import { initTravelApi } from './api.js';
+import { setupPlaceDatalist, getSearchParamsFromForm } from './lib/searchFormHelpers.js';
 
 const selection = {
   flight: null,
@@ -35,9 +36,11 @@ function setStatus(message, isError = false) {
 }
 
 function getSearchMeta() {
+  const params = getSearchParamsFromForm(document.getElementById('search-form'));
   return {
-    destinationId: document.getElementById('destination').value,
-    origin: document.getElementById('origin').value,
+    destinationId: params.destinationCity,
+    origin: params.originAirport,
+    ...params,
   };
 }
 
@@ -293,14 +296,19 @@ async function openAllStepsInSequence() {
   setStatus('Todos os links abertos em abas separadas. Conclua cada reserva e marque como concluído.');
 }
 
-async function loadDestinations() {
+async function loadPlacesAutocomplete() {
   const data = await travelApi.getDestinations();
-  const select = document.getElementById('destination');
-  select.innerHTML =
-    '<option value="">Destino</option>' +
-    data.destinations
-      .map((d) => `<option value="${d.id}">${d.city}, ${d.country}</option>`)
-      .join('');
+  const places = data.destinations || [];
+  setupPlaceDatalist(
+    document.getElementById('origin-city'),
+    document.getElementById('places-list'),
+    places
+  );
+  setupPlaceDatalist(
+    document.getElementById('destination-city'),
+    document.getElementById('places-list'),
+    places
+  );
 }
 
 async function loadPartners() {
@@ -394,23 +402,16 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
   checkoutSession = null;
   lastBuiltTrip = null;
 
-  const destination = document.getElementById('destination').value;
-  const origin = document.getElementById('origin').value;
-  const passengers = document.getElementById('passengers').value;
-  const nights = document.getElementById('nights').value;
-  const departureDate = document.getElementById('departure-date').value;
+  const params = getSearchParamsFromForm(e.target);
+  if (!params.destinationCity) {
+    setStatus('Informe o destino (cidade e país).', true);
+    return;
+  }
 
-  setStatus('Buscando voos, hotéis, carros e resorts em paralelo...');
+  setStatus('Buscando voos, hotéis, carros e resorts para sua rota...');
 
   try {
-    const data = await travelApi.search({
-      destinationId: destination,
-      origin,
-      passengers: Number(passengers),
-      guests: 2,
-      nights: Number(nights),
-      departureDate,
-    });
+    const data = await travelApi.search(params);
 
     searchResults = data;
     document.getElementById('results').classList.remove('hidden');
@@ -430,7 +431,9 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     renderList('cars-list', data.cars, 'car');
     renderList('allinclusive-list', data.allInclusive, 'allInclusive');
 
-    setStatus(`${data.flights.length} voos · ${data.hotels.length} hotéis · ${data.cars.length} carros · ${data.allInclusive.length} all inclusive encontrados.`);
+    setStatus(
+      `${data.origin?.city || ''} → ${data.destination?.city || ''}: ${data.flights.length} voos · ${data.hotels.length} hotéis · ${data.cars.length} carros`
+    );
   } catch (err) {
     setStatus(err.message, true);
   }
@@ -457,7 +460,7 @@ document.getElementById('build-btn').addEventListener('click', async () => {
 
 async function boot() {
   travelApi = await initTravelApi();
-  await loadDestinations();
+  await loadPlacesAutocomplete();
   await loadPartners();
   await loadApiStatus();
   setDefaultDepartureDate();
@@ -466,7 +469,7 @@ async function boot() {
 
   if (travelApi.mode === 'local') {
     const banner = document.getElementById('sources');
-    banner.textContent = 'Rodando 100% no navegador via GitHub Pages — sem instalar Node.js.';
+    banner.textContent = 'Digite qualquer destino — preços estimados por distância e região.';
     banner.classList.remove('hidden');
   }
 }
