@@ -1,0 +1,26 @@
+{
+  "name": "meta-travel",
+  "version": "1.0.0",
+  "description": "Meta Travel — planejador modular de viagens sem pacote fechado",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build:pages": "node scripts/build-pages.js",
+    "build:release": "node scripts/build-release.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "viagens",
+    "turismo",
+    "planejador",
+    "chrome-extension"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

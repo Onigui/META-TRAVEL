@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meta Travel — Painel de Parceiros</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">B2B · Programa de parceiros</p>
+          <h1>Painel de Parceiros</h1>
+          <p class="subtitle">Cadastre empresas e descontos exclusivos. Usuários montam a viagem livremente e recebem o desconto automaticamente.</p>
+        </div>
+        <div class="hero-card">
+          <strong>Token de admin</strong>
+          <input id="admin-token" type="password" placeholder="X-Admin-Token" style="width:100%;margin-top:8px" />
+        </div>
+      </header>
+
+      <section class="panel">
+        <h2>Novo parceiro</h2>
+        <form id="partner-form" class="search-form">
+          <input id="p-id" placeholder="ID (ex: latam)" required />
+          <input id="p-name" placeholder="Nome" required />
+          <select id="p-category" required>
+            <option value="">Categoria</option>
+            <option value="airline">Companhia aérea</option>
+            <option value="hotel">Hotel</option>
+            <option value="car">Locadora</option>
+            <option value="allInclusive">All inclusive</option>
+          </select>
+          <input id="p-discount" type="number" min="1" max="50" placeholder="Desconto %" required />
+          <input id="p-badge" placeholder="Badge (ex: Parceiro oficial)" />
+          <button type="submit">Salvar parceiro</button>
+        </form>
+      </section>
+
+      <section id="status" class="status hidden"></section>
+
+      <section class="panel">
+        <h2>Parceiros cadastrados</h2>
+        <div id="partners-admin" class="partners-grid"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Capturas recentes (extensão)</h2>
+        <div id="captures-list" class="list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Checkouts e comissões</h2>
+        <div id="checkouts-list" class="list"></div>
+      </section>
+
+      <p><a href="index.html" style="color:var(--accent-2)">← Voltar ao planejador</a></p>
+    </div>
+    <script type="module" src="partners.js"></script>
+  </body>
+</html>
