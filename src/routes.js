@@ -29,9 +29,9 @@ router.get('/partners', (_req, res) => {
 });
 
 router.get('/status', (_req, res) => {
-  const amadeus = require('../adapters/amadeusClient');
-  const booking = require('../adapters/bookingClient');
-  const rentalcars = require('../adapters/rentalcarsClient');
+  const amadeus = require('./adapters/amadeusClient');
+  const booking = require('./adapters/bookingClient');
+  const rentalcars = require('./adapters/rentalcarsClient');
   res.json({
     amadeus: amadeus.isConfigured() ? 'configured' : 'mock-fallback',
     booking: booking.isConfigured() ? 'configured' : 'mock-fallback',
