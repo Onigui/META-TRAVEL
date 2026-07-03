@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Meta Travel — Monte sua viagem do seu jeito</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icons/icon192.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Planejador modular de viagens</p>
+          <h1>Meta Travel</h1>
+          <p class="subtitle">
+            Escolha passagem, hotel, carro e all inclusive separadamente — de empresas diferentes, no mesmo lugar.
+            Sem pacote fechado. Com descontos de parceiros.
+          </p>
+        </div>
+        <div class="hero-card">
+          <strong>Diferente dos pacotes prontos</strong>
+          <p>Você compara todas as companhias aéreas, hotéis e locadoras e monta a viagem peça a peça.</p>
+          <button id="install-btn" type="button" class="install-btn hidden">Instalar app</button>
+        </div>
+      </header>
+
+      <nav class="nav-links">
+        <a href="partners.html">Painel de parceiros</a>
+        <span id="api-status" class="api-status">Verificando APIs...</span>
+      </nav>
+
+      <section class="panel">
+        <h2>1. Defina sua viagem</h2>
+        <form id="search-form" class="search-form">
+          <select id="destination" required>
+            <option value="">Destino</option>
+          </select>
+          <input id="origin" type="text" value="GRU" placeholder="Origem (IATA)" maxlength="3" />
+          <input id="departure-date" type="date" />
+          <input id="passengers" type="number" min="1" max="9" value="2" placeholder="Passageiros" />
+          <input id="nights" type="number" min="1" max="30" value="5" placeholder="Noites" />
+          <button type="submit">Buscar opções</button>
+        </form>
+      </section>
+
+      <section id="status" class="status hidden"></section>
+      <section id="sources" class="status hidden"></section>
+
+      <section id="results" class="results hidden">
+        <div class="grid-2">
+          <div class="panel">
+            <h2>2. Voos <span class="tag" id="flight-source">agregador</span></h2>
+            <div id="flights-list" class="options-list"></div>
+          </div>
+          <div class="panel">
+            <h2>3. Hotéis <span class="tag" id="hotel-source">agregador</span></h2>
+            <div id="hotels-list" class="options-list"></div>
+          </div>
+          <div class="panel">
+            <h2>4. Aluguel de carros <span class="tag" id="car-source">opcional</span></h2>
+            <div id="cars-list" class="options-list"></div>
+          </div>
+          <div class="panel">
+            <h2>5. All inclusive <span class="tag">opcional</span></h2>
+            <div id="allinclusive-list" class="options-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="summary" class="panel summary hidden">
+        <h2>6. Sua viagem montada</h2>
+        <div id="summary-content"></div>
+        <div class="summary-actions">
+          <button id="build-btn" type="button" class="primary-btn">Calcular total com descontos de parceiros</button>
+          <button id="checkout-btn" type="button" class="checkout-btn hidden">Reservar tudo →</button>
+        </div>
+      </section>
+
+      <div id="checkout-modal" class="checkout-modal hidden" role="dialog" aria-labelledby="checkout-title">
+        <div class="checkout-panel">
+          <div class="checkout-header">
+            <h2 id="checkout-title">Checkout unificado</h2>
+            <button type="button" id="checkout-close" aria-label="Fechar">×</button>
+          </div>
+          <p class="checkout-subtitle">Reservas em ordem — cada item abre no site do provedor com tracking de afiliado Meta Travel.</p>
+          <div id="checkout-progress" class="checkout-progress"></div>
+          <div id="checkout-steps" class="checkout-steps"></div>
+          <div class="checkout-footer">
+            <button type="button" id="checkout-start" class="primary-btn">Iniciar reservas</button>
+            <button type="button" id="checkout-next" class="checkout-btn hidden">Concluí — próximo item</button>
+            <button type="button" id="checkout-open-all" class="install-btn">Abrir todos em sequência</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="panel partners">
+        <h2>Programa de parceiros</h2>
+        <p>Empresas de aviação, hotéis e locadoras podem cadastrar descontos exclusivos. O usuário monta livremente e o desconto é aplicado automaticamente.</p>
+        <div id="partners-list" class="partners-grid"></div>
+      </section>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

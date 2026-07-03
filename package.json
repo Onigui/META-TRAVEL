@@ -7,7 +7,10 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "build:pages": "node scripts/build-pages.js",
-    "build:release": "node scripts/build-release.js"
+    "build:release": "node scripts/build-release.js",
+    "icons": "node scripts/generate-icons.js",
+    "organize": "node scripts/organize-root.js",
+    "build": "npm run icons && npm run build:pages"
   },
   "engines": {
     "node": ">=18"
