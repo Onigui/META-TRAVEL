@@ -1,0 +1,27 @@
+name: Build Preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/build-pages.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meta-travel-preview
+          path: |
+            dist/pages
+            dist/*.zip
+          retention-days: 30
+      - run: |
+          echo "## Build concluído" >> $GITHUB_STEP_SUMMARY
+          echo "Site: https://onigui.github.io/META-TRAVEL/" >> $GITHUB_STEP_SUMMARY
