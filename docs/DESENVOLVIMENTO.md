@@ -72,12 +72,16 @@ Veja `.env.example`. Sem credenciais, os adapters usam **mock** (dados ilustrati
 
 ## Extensão Chrome
 
-```bash
-npm run build:release
-# Carregue dist/meta-travel-extension-v*.zip em chrome://extensions (modo desenvolvedor)
-```
+A extensão funciona **100% offline** no painel lateral — sem site nem Node.js.
 
-Ou use a pasta `extension/` diretamente em "Carregar sem compactação".
+1. `npm run build:release` → `dist/meta-travel-extension-v*.zip`
+2. Chrome → `chrome://extensions` → Modo desenvolvedor → **Carregar sem compactação** (pasta `extension/`) ou instale o ZIP
+3. Clique no ícone Meta Travel → abre o **painel lateral** com:
+   - Busca de voos, hotéis, carros e all inclusive
+   - Montagem da viagem e checkout unificado
+   - Aba **Capturas** com preços salvos de sites de viagem
+
+Capturas são salvas em `chrome.storage.local`. API remota é opcional em Configurações da extensão.
 
 ## Próximos passos de produto
 

@@ -107,15 +107,19 @@ function renderWidget(data) {
     <p class="mt-title">${data.title.slice(0, 80)}</p>
     <div class="mt-row mt-highlight"><span>Preço detectado</span><strong>${formatCurrency(data.price)}</strong></div>
     <button type="button" class="mt-save">Salvar no planejador</button>
-    <button type="button" class="mt-open">Abrir Meta Travel</button>
+    <button type="button" class="mt-open">Abrir planejador</button>
   `;
 
   widget.querySelector('.mt-close')?.addEventListener('click', () => widget.remove());
 
   widget.querySelector('.mt-save')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'SAVE_CAPTURE', payload: data }, (response) => {
+      const btn = widget.querySelector('.mt-save');
       if (response?.ok) {
-        widget.querySelector('.mt-save').textContent = 'Salvo ✓';
+        btn.textContent = 'Salvo ✓';
+        setTimeout(() => { btn.textContent = 'Salvar no planejador'; }, 2000);
+      } else {
+        btn.textContent = 'Erro ao salvar';
       }
     });
   });

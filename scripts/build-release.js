@@ -10,6 +10,14 @@ const distDir = path.join(root, 'dist');
 const zipName = `meta-travel-extension-v${version}.zip`;
 const zipPath = path.join(distDir, zipName);
 
+// Sincroniza motor local para a extensão
+const libDir = path.join(extensionDir, 'lib');
+fs.mkdirSync(libDir, { recursive: true });
+fs.copyFileSync(
+  path.join(root, 'shared', 'travelEngine.js'),
+  path.join(libDir, 'travelEngine.js')
+);
+
 fs.mkdirSync(distDir, { recursive: true });
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
