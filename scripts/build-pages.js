@@ -22,13 +22,16 @@ function copyDir(src, dest) {
   }
 }
 
+function copyLib(targetLib) {
+  fs.mkdirSync(targetLib, { recursive: true });
+  for (const file of ['travelEngine.js', 'places.js', 'places.json', 'mockPricing.js', 'searchFormHelpers.js']) {
+    fs.copyFileSync(path.join(sharedDir, file), path.join(targetLib, file));
+  }
+}
+
 rm(pagesDir);
 copyDir(path.join(root, 'web'), pagesDir);
-fs.mkdirSync(path.join(pagesDir, 'lib'), { recursive: true });
-fs.copyFileSync(
-  path.join(sharedDir, 'travelEngine.js'),
-  path.join(pagesDir, 'lib/travelEngine.js')
-);
+copyLib(path.join(pagesDir, 'lib'));
 
 // Evita processamento Jekyll no GitHub Pages
 fs.writeFileSync(path.join(pagesDir, '.nojekyll'), '');

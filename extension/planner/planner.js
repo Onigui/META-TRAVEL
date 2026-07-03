@@ -1,4 +1,5 @@
 import { localTravelApi } from '../lib/travelEngine.js';
+import { setupPlaceDatalist, getSearchParamsFromForm } from '../lib/searchFormHelpers.js';
 
 const travelApi = localTravelApi;
 
@@ -271,12 +272,11 @@ async function openAllStepsInSequence() {
   setStatus('Links abertos em abas. Marque cada reserva como concluída.');
 }
 
-async function loadDestinations() {
+async function loadPlacesAutocomplete() {
   const data = await travelApi.getDestinations();
-  const select = document.getElementById('destination');
-  select.innerHTML =
-    '<option value="">Destino</option>' +
-    data.destinations.map((d) => `<option value="${d.id}">${d.city}, ${d.country}</option>`).join('');
+  const places = data.destinations || [];
+  setupPlaceDatalist(document.getElementById('origin-city'), document.getElementById('places-list'), places);
+  setupPlaceDatalist(document.getElementById('destination-city'), document.getElementById('places-list'), places);
 }
 
 async function loadPartners() {
@@ -387,23 +387,16 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
   selection.allInclusive = null;
   checkoutSession = null;
 
-  const destination = document.getElementById('destination').value;
-  if (!destination) {
-    setStatus('Escolha um destino.', true);
+  const params = getSearchParamsFromForm(e.target);
+  if (!params.destinationCity) {
+    setStatus('Informe o destino.', true);
     return;
   }
 
   setStatus('Buscando opções...');
 
   try {
-    const data = await travelApi.search({
-      destinationId: destination,
-      origin: document.getElementById('origin').value,
-      passengers: Number(document.getElementById('passengers').value),
-      guests: 2,
-      nights: Number(document.getElementById('nights').value),
-      departureDate: document.getElementById('departure-date').value,
-    });
+    const data = await travelApi.search(params);
 
     searchResults = data;
     document.getElementById('results').classList.remove('hidden');
@@ -415,7 +408,7 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     renderList('cars-list', data.cars, 'car');
     renderList('allinclusive-list', data.allInclusive, 'allInclusive');
 
-    setStatus(`${data.flights.length} voos · ${data.hotels.length} hotéis · ${data.cars.length} carros`);
+    setStatus(`${data.origin?.city} → ${data.destination?.city}: ${data.flights.length} voos · ${data.hotels.length} hotéis`);
     switchTab('plan');
   } catch (err) {
     setStatus(err.message, true);
@@ -464,7 +457,7 @@ async function boot() {
   setupTabs();
   setupCheckoutUi();
   setDefaultDepartureDate();
-  await loadDestinations();
+  await loadPlacesAutocomplete();
   await loadPartners();
   await loadApiStatus();
   await restoreSelection();

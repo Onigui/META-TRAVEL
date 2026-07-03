@@ -7,6 +7,7 @@ const {
   adminListPartners,
   partnerStore,
 } = require('./services/tripService');
+const { searchPlaces } = require('../shared/places.cjs');
 const checkoutService = require('./services/checkoutService');
 
 const router = express.Router();
@@ -41,22 +42,53 @@ router.get('/status', (_req, res) => {
   });
 });
 
+router.get('/places', (req, res) => {
+  const q = req.query.q || '';
+  res.json({ places: searchPlaces(q, Number(req.query.limit) || 12) });
+});
+
 router.get('/search', async (req, res) => {
   try {
-    const { destination, origin, passengers, guests, nights, days, departureDate, checkIn } = req.query;
-    if (!destination) {
-      return res.status(400).json({ error: 'Informe destination (ex: cancun-mx).' });
+    const {
+      destination,
+      destinationCity,
+      destinationCountry,
+      destinationAirport,
+      origin,
+      originCity,
+      originCountry,
+      originAirport,
+      passengers,
+      guests,
+      nights,
+      days,
+      departureDate,
+      checkIn,
+      returnDate,
+    } = req.query;
+
+    if (!destination && !destinationCity) {
+      return res.status(400).json({
+        error: 'Informe destino: destinationCity + destinationCountry, ou texto livre em destination (ex: Paris, França).',
+      });
     }
 
     const result = await searchAllOptions({
       destinationId: destination,
-      origin: origin || 'GRU',
+      destinationCity,
+      destinationCountry,
+      destinationAirport,
+      origin,
+      originCity,
+      originCountry,
+      originAirport,
       passengers: Number(passengers) || 1,
       guests: Number(guests) || 2,
       nights: Number(nights) || 5,
       days: Number(days) || Number(nights) || 5,
       departureDate,
       checkIn,
+      returnDate,
     });
 
     res.json(result);

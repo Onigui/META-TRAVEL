@@ -36,14 +36,25 @@
 
       <section class="panel">
         <h2>1. Defina sua viagem</h2>
+        <p class="form-hint">Digite qualquer cidade e país — ou código IATA do aeroporto (ex: GRU, CDG).</p>
         <form id="search-form" class="search-form">
-          <select id="destination" required>
-            <option value="">Destino</option>
-          </select>
-          <input id="origin" type="text" value="GRU" placeholder="Origem (IATA)" maxlength="3" />
-          <input id="departure-date" type="date" />
+          <fieldset class="form-group">
+            <legend>Origem (embarque)</legend>
+            <input id="origin-city" type="text" list="places-list" value="São Paulo, Brasil" placeholder="Cidade de origem" required autocomplete="off" data-city="São Paulo" data-country="Brasil" data-airport="GRU" />
+            <input id="origin-airport" type="text" value="GRU" placeholder="Aeroporto (IATA)" maxlength="3" title="Código IATA do aeroporto de embarque" />
+          </fieldset>
+          <fieldset class="form-group">
+            <legend>Destino</legend>
+            <input id="destination-city" type="text" list="places-list" placeholder="Ex: Paris, França ou Tokyo, Japão" required autocomplete="off" />
+            <input id="destination-country" type="text" placeholder="País (opcional se já estiver no campo acima)" />
+            <input id="destination-airport" type="text" placeholder="Aeroporto destino (IATA, opcional)" maxlength="3" />
+          </fieldset>
+          <datalist id="places-list"></datalist>
+          <input id="departure-date" type="date" title="Data de ida" />
+          <input id="return-date" type="date" title="Data de volta (opcional)" />
           <input id="passengers" type="number" min="1" max="9" value="2" placeholder="Passageiros" />
-          <input id="nights" type="number" min="1" max="30" value="5" placeholder="Noites" />
+          <input id="guests" type="number" min="1" max="9" value="2" placeholder="Hóspedes" />
+          <input id="nights" type="number" min="1" max="60" value="5" placeholder="Noites" />
           <button type="submit">Buscar opções</button>
         </form>
       </section>

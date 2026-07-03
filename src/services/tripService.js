@@ -1,4 +1,4 @@
-const { DESTINATIONS } = require('../../shared/tripData.cjs');
+const { resolveTripPlaces, listPlaces } = require('../../shared/places.cjs');
 const partnerStore = require('./partnerStore');
 const { buildTripSummary, rankByPrice } = require('../../shared/tripEngineBridge');
 
@@ -11,52 +11,73 @@ const booking = require('../adapters/bookingClient');
 const rentalcars = require('../adapters/rentalcarsClient');
 
 function resolveDataSource({ configured, hasResults, source }) {
-  if (!configured) return 'mock';
+  if (!configured) return 'estimate';
   if (hasResults && source) return source;
-  if (configured && !hasResults) return `${source || 'api'}+fallback-mock`;
-  return 'mock';
+  if (configured && !hasResults) return `${source || 'api'}+estimate`;
+  return 'estimate';
 }
 
 async function searchAllOptions(params) {
   const {
-    destinationId,
-    origin = 'GRU',
     passengers = 1,
     guests = 2,
     nights = 5,
     days = 5,
     departureDate,
     checkIn,
+    returnDate,
   } = params;
 
+  const { origin, destination } = resolveTripPlaces(params);
   const checkInDate = checkIn || departureDate || amadeus.defaultDepartureDate();
   const rentalDays = days || nights;
 
   const [flights, hotels, cars, allInclusive] = await Promise.all([
-    flightAdapter.search({ destinationId, origin, passengers, departureDate: checkInDate }),
-    hotelAdapter.search({ destinationId, nights, guests, checkIn: checkInDate }),
+    flightAdapter.search({
+      originPlace: origin,
+      destinationPlace: destination,
+      passengers,
+      departureDate: checkInDate,
+      returnDate,
+    }),
+    hotelAdapter.search({
+      destinationPlace: destination,
+      nights,
+      guests,
+      checkIn: checkInDate,
+    }),
     carAdapter.search({
-      destinationId,
+      destinationPlace: destination,
       days: rentalDays,
       pickUpDate: checkInDate,
       dropOffDate: amadeus.addDays(checkInDate, rentalDays),
     }),
-    allInclusiveAdapter.search({ destinationId, nights, guests }),
+    allInclusiveAdapter.search({ destinationPlace: destination, nights, guests }),
   ]);
 
-  const flightSource = flights[0]?.source || 'mock';
+  const flightSource = flights[0]?.source || 'estimate';
   const hotelSource = hotels.some((h) => h.source === 'booking')
     ? (hotels.some((h) => h.source === 'amadeus') ? 'amadeus+booking' : 'booking')
-    : (hotels[0]?.source || 'mock');
-  const carSource = cars[0]?.source || 'mock';
+    : (hotels[0]?.source || 'estimate');
+  const carSource = cars[0]?.source || 'estimate';
 
   return {
-    destinationId,
-    origin,
+    destinationId: destination.id,
+    destination: {
+      city: destination.city,
+      country: destination.country,
+      airport: destination.airport,
+    },
+    origin: {
+      city: origin.city,
+      country: origin.country,
+      airport: origin.airport,
+    },
     passengers,
     guests,
     nights,
     checkIn: checkInDate,
+    returnDate: returnDate || null,
     flights: rankByPrice(flights),
     hotels: rankByPrice(hotels),
     cars: rankByPrice(cars),
@@ -79,9 +100,9 @@ async function searchAllOptions(params) {
         hasResults: carSource === 'rentalcars',
         source: 'rentalcars',
       }),
-      allInclusive: 'mock',
+      allInclusive: 'estimate',
     },
-    note: 'Resultados de múltiplos provedores — escolha cada item separadamente.',
+    note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados com base na distância e região — configure .env para APIs reais.`,
   };
 }
 
@@ -111,7 +132,7 @@ function listPartnersInfo() {
 }
 
 function listDestinations() {
-  return { destinations: DESTINATIONS };
+  return { destinations: listPlaces() };
 }
 
 function adminListPartners() {

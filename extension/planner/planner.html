@@ -23,17 +23,25 @@
 
       <section id="panel-plan" class="tab-panel">
         <form id="search-form" class="search-form">
-          <select id="destination" required>
-            <option value="">Destino</option>
-          </select>
+          <label class="field-label">Origem (embarque)</label>
+          <input id="origin-city" type="text" list="places-list" value="São Paulo, Brasil" placeholder="Cidade" required autocomplete="off" data-city="São Paulo" data-country="Brasil" data-airport="GRU" />
+          <input id="origin-airport" type="text" value="GRU" placeholder="Aeroporto IATA" maxlength="3" />
+
+          <label class="field-label">Destino</label>
+          <input id="destination-city" type="text" list="places-list" placeholder="Ex: Paris, França" required autocomplete="off" />
+          <input id="destination-country" type="text" placeholder="País (opcional)" />
+          <input id="destination-airport" type="text" placeholder="Aeroporto IATA (opcional)" maxlength="3" />
+          <datalist id="places-list"></datalist>
+
           <div class="row-2">
-            <input id="origin" type="text" value="GRU" placeholder="Origem" maxlength="3" />
-            <input id="departure-date" type="date" />
+            <input id="departure-date" type="date" title="Ida" />
+            <input id="return-date" type="date" title="Volta (opcional)" />
           </div>
           <div class="row-2">
             <input id="passengers" type="number" min="1" max="9" value="2" title="Passageiros" />
-            <input id="nights" type="number" min="1" max="30" value="5" title="Noites" />
+            <input id="nights" type="number" min="1" max="60" value="5" title="Noites" />
           </div>
+          <input id="guests" type="number" min="1" max="9" value="2" title="Hóspedes" class="hidden" />
           <button type="submit" class="btn-primary">Buscar opções</button>
         </form>
 

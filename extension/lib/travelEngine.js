@@ -1,11 +1,14 @@
-/** Motor Meta Travel 100% no navegador — GitHub Pages, sem Node.js */
+/** Motor Meta Travel 100% no navegador — GitHub Pages e extensão */
 
-export const DESTINATIONS = [
-  { id: 'cancun-mx', city: 'Cancún', country: 'México', airport: 'CUN', cityCode: 'CUN' },
-  { id: 'miami-us', city: 'Miami', country: 'EUA', airport: 'MIA', cityCode: 'MIA' },
-  { id: 'lisboa-pt', city: 'Lisboa', country: 'Portugal', airport: 'LIS', cityCode: 'LIS' },
-  { id: 'bali-id', city: 'Bali', country: 'Indonésia', airport: 'DPS', cityCode: 'DPS' },
-];
+import { listPlaces, resolveTripPlaces, searchPlaces } from './places.js';
+import {
+  generateFlights,
+  generateHotels,
+  generateCars,
+  generateAllInclusive,
+} from './mockPricing.js';
+
+export const DESTINATIONS = listPlaces();
 
 export const PARTNERS = [
   { id: 'latam', name: 'LATAM', category: 'airline', discountPercent: 5, badge: 'Parceiro oficial' },
@@ -22,70 +25,6 @@ const STEP_LABELS = {
   hotel: 'Reservar hotel',
   car: 'Reservar carro',
   allInclusive: 'Reservar all inclusive',
-};
-
-const MOCK_FLIGHTS = {
-  'cancun-mx': [
-    { id: 'fl-latam-1', provider: 'latam', airline: 'LATAM', basePrice: 2890, stops: 0, duration: '9h20', departure: '08:15' },
-    { id: 'fl-gol-1', provider: 'gol', airline: 'GOL', basePrice: 2450, stops: 1, duration: '13h05', departure: '06:40' },
-    { id: 'fl-azul-1', provider: 'azul', airline: 'Azul', basePrice: 2680, stops: 1, duration: '11h30', departure: '14:20' },
-    { id: 'fl-avianca-1', provider: 'avianca', airline: 'Avianca', basePrice: 2310, stops: 1, duration: '12h45', departure: '22:10' },
-  ],
-  'miami-us': [
-    { id: 'fl-latam-mia', provider: 'latam', airline: 'LATAM', basePrice: 1890, stops: 0, duration: '8h50', departure: '23:55' },
-    { id: 'fl-gol-mia', provider: 'gol', airline: 'GOL', basePrice: 1720, stops: 1, duration: '11h20', departure: '07:30' },
-    { id: 'fl-american-mia', provider: 'american', airline: 'American Airlines', basePrice: 2100, stops: 0, duration: '8h40', departure: '10:15' },
-  ],
-  'lisboa-pt': [
-    { id: 'fl-tap-lis', provider: 'tap', airline: 'TAP Air Portugal', basePrice: 3200, stops: 0, duration: '10h15', departure: '18:45' },
-    { id: 'fl-latam-lis', provider: 'latam', airline: 'LATAM', basePrice: 3450, stops: 1, duration: '14h30', departure: '21:00' },
-  ],
-  'bali-id': [
-    { id: 'fl-singapore-bali', provider: 'singapore', airline: 'Singapore Airlines', basePrice: 4890, stops: 1, duration: '22h10', departure: '01:20' },
-    { id: 'fl-qatar-bali', provider: 'qatar', airline: 'Qatar Airways', basePrice: 4520, stops: 1, duration: '20h45', departure: '03:50' },
-  ],
-};
-
-const MOCK_HOTELS = {
-  'cancun-mx': [
-    { id: 'ht-riu', provider: 'booking', name: 'Hotel Riu Cancún', stars: 4, basePrice: 890, zone: 'Zona Hotelera' },
-    { id: 'ht-hyatt', provider: 'hyatt', name: 'Hyatt Ziva Cancún', stars: 5, basePrice: 1450, zone: 'Punta Cancún' },
-    { id: 'ht-ibis', provider: 'accor', name: 'Ibis Cancún Centro', stars: 3, basePrice: 420, zone: 'Centro' },
-  ],
-  'miami-us': [
-    { id: 'ht-fontainebleau', provider: 'booking', name: 'Fontainebleau Miami Beach', stars: 5, basePrice: 1680, zone: 'Miami Beach' },
-    { id: 'ht-hilton', provider: 'hilton', name: 'Hilton Downtown', stars: 4, basePrice: 920, zone: 'Downtown' },
-  ],
-  'lisboa-pt': [
-    { id: 'ht-altis', provider: 'booking', name: 'Altis Belém Hotel & Spa', stars: 5, basePrice: 780, zone: 'Belém' },
-    { id: 'ht-eurostars', provider: 'eurostars', name: 'Eurostars Lisboa Parque', stars: 4, basePrice: 520, zone: 'Parque' },
-  ],
-  'bali-id': [
-    { id: 'ht-ayana', provider: 'booking', name: 'Ayana Resort Bali', stars: 5, basePrice: 1120, zone: 'Jimbaran' },
-  ],
-};
-
-const MOCK_CARS = {
-  'cancun-mx': [
-    { id: 'car-localiza-econ', provider: 'localiza', name: 'Localiza · Econômico', category: 'Econômico', basePrice: 280 },
-    { id: 'car-hertz-suv', provider: 'hertz', name: 'Hertz · SUV', category: 'SUV', basePrice: 520 },
-  ],
-  'miami-us': [
-    { id: 'car-enterprise-mid', provider: 'enterprise', name: 'Enterprise · Intermediário', category: 'Intermediário', basePrice: 380 },
-    { id: 'car-localiza-mia', provider: 'localiza', name: 'Localiza · Econômico', category: 'Econômico', basePrice: 310 },
-  ],
-  'lisboa-pt': [{ id: 'car-europcar', provider: 'europcar', name: 'Europcar · Compacto', category: 'Compacto', basePrice: 290 }],
-  'bali-id': [{ id: 'car-scooter', provider: 'local', name: 'Scooter local', category: 'Scooter', basePrice: 90 }],
-};
-
-const MOCK_RESORTS = {
-  'cancun-mx': [
-    { id: 'ai-decameron', provider: 'decameron', name: 'Decameron All Inclusive Cancún', basePrice: 4200, meals: 'Todas refeições + bebidas', activities: 'Esportes aquáticos' },
-    { id: 'ai-riu-palace', provider: 'riu', name: 'Riu Palace', basePrice: 5100, meals: 'Gourmet all inclusive', activities: 'Spa parcial' },
-  ],
-  'bali-id': [
-    { id: 'ai-club-med', provider: 'clubmed', name: 'Club Med Bali', basePrice: 6800, meals: 'All inclusive premium', activities: 'Surf incluído' },
-  ],
 };
 
 function defaultDepartureDate() {
@@ -170,67 +109,6 @@ function wrapUrl(originalUrl, { checkoutId, type, provider, stepIndex }) {
   }
 }
 
-function searchFlights(destinationId, { origin = 'GRU', passengers = 1, departureDate }) {
-  const date = departureDate || defaultDepartureDate();
-  return (MOCK_FLIGHTS[destinationId] || []).map((f) => ({
-    id: f.id,
-    type: 'flight',
-    provider: f.provider,
-    name: `${f.airline} · ${origin} → ${destinationId}`,
-    basePrice: f.basePrice * passengers,
-    partnerId: ['latam', 'gol'].includes(f.provider) ? f.provider : null,
-    details: { airline: f.airline, origin, stops: f.stops, duration: f.duration, departure: f.departure, departureDate: date, passengers },
-    bookingUrl: `https://www.google.com/travel/flights?q=Flights+${origin}+on+${date}`,
-    source: 'demo',
-  }));
-}
-
-function searchHotels(destinationId, { nights = 5, guests = 2, checkIn }) {
-  const checkInDate = checkIn || defaultDepartureDate();
-  return (MOCK_HOTELS[destinationId] || []).map((h) => ({
-    id: h.id,
-    type: 'hotel',
-    provider: h.provider,
-    name: h.name,
-    basePrice: h.basePrice * nights,
-    partnerId: h.provider === 'booking' ? 'booking' : null,
-    details: { stars: h.stars, zone: h.zone, nights, guests, checkIn: checkInDate, pricePerNight: h.basePrice },
-    bookingUrl: `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(h.name)}&checkin=${checkInDate}`,
-    source: 'demo',
-  }));
-}
-
-function searchCars(destinationId, { days = 5, pickUpDate }) {
-  const pickUp = pickUpDate || defaultDepartureDate();
-  const dropOff = addDays(pickUp, days);
-  const dest = DESTINATIONS.find((d) => d.id === destinationId);
-  return (MOCK_CARS[destinationId] || []).map((c) => ({
-    id: c.id,
-    type: 'car',
-    provider: c.provider,
-    name: c.name,
-    basePrice: c.basePrice * days,
-    partnerId: c.provider === 'localiza' ? 'localiza' : null,
-    details: { category: c.category, days, pricePerDay: c.basePrice, pickUpDate: pickUp, dropOffDate: dropOff },
-    bookingUrl: `https://www.rentalcars.com/SearchResults.do?affiliateCode=meta-travel&pickupLocation=${dest?.airport || ''}`,
-    source: 'demo',
-  }));
-}
-
-function searchAllInclusive(destinationId, { nights = 5, guests = 2 }) {
-  return (MOCK_RESORTS[destinationId] || []).map((r) => ({
-    id: r.id,
-    type: 'allInclusive',
-    provider: r.provider,
-    name: r.name,
-    basePrice: r.basePrice * Math.ceil(guests / 2),
-    partnerId: r.provider === 'decameron' ? 'decameron' : null,
-    details: { nights, guests, meals: r.meals, activities: r.activities },
-    bookingUrl: `https://www.decameron.com/es/hoteles`,
-    source: 'demo',
-  }));
-}
-
 const checkoutSessions = new Map();
 
 export const localTravelApi = {
@@ -238,16 +116,20 @@ export const localTravelApi = {
 
   getStatus() {
     return Promise.resolve({
-      amadeus: 'demo-local',
-      booking: 'demo-local',
-      rentalcars: 'demo-local',
+      amadeus: 'estimate-local',
+      booking: 'estimate-local',
+      rentalcars: 'estimate-local',
       partners: PARTNERS.length,
       mode: 'local',
     });
   },
 
   getDestinations() {
-    return Promise.resolve({ destinations: DESTINATIONS });
+    return Promise.resolve({ destinations: listPlaces() });
+  },
+
+  searchPlaces(query) {
+    return Promise.resolve({ places: searchPlaces(query, 12) });
   },
 
   getPartners() {
@@ -255,27 +137,43 @@ export const localTravelApi = {
   },
 
   search(params) {
+    const { origin, destination } = resolveTripPlaces(params);
     const checkIn = params.departureDate || params.checkIn || defaultDepartureDate();
     const nights = params.nights || 5;
-    const flights = searchFlights(params.destinationId, params);
-    const hotels = searchHotels(params.destinationId, { nights, guests: params.guests, checkIn });
-    const cars = searchCars(params.destinationId, { days: nights, pickUpDate: checkIn });
-    const allInclusive = searchAllInclusive(params.destinationId, { nights, guests: params.guests });
+    const guests = params.guests || 2;
+    const passengers = params.passengers || 1;
+
+    const flights = generateFlights({
+      origin,
+      destination,
+      passengers,
+      departureDate: checkIn,
+    });
+    const hotels = generateHotels({ destination, nights, guests, checkIn });
+    const cars = generateCars({
+      destination,
+      days: nights,
+      pickUpDate: checkIn,
+      dropOffDate: addDays(checkIn, nights),
+    });
+    const allInclusive = generateAllInclusive({ destination, nights, guests });
 
     return Promise.resolve({
-      destinationId: params.destinationId,
-      origin: params.origin || 'GRU',
-      passengers: params.passengers || 1,
-      guests: params.guests || 2,
+      destinationId: destination.id,
+      destination: { city: destination.city, country: destination.country, airport: destination.airport },
+      origin: { city: origin.city, country: origin.country, airport: origin.airport },
+      passengers,
+      guests,
       nights,
       checkIn,
+      returnDate: params.returnDate || null,
       flights: rankByPrice(flights),
       hotels: rankByPrice(hotels),
       cars: rankByPrice(cars),
       allInclusive: rankByPrice(allInclusive),
-      dataSources: { flights: 'demo', hotels: 'demo', cars: 'demo', allInclusive: 'demo' },
+      dataSources: { flights: 'estimate', hotels: 'estimate', cars: 'estimate', allInclusive: 'estimate' },
       mode: 'local',
-      note: 'Versão demo no navegador — dados ilustrativos. Funciona sem Node.js.',
+      note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados pela distância e região.`,
     });
   },
 
@@ -349,3 +247,5 @@ export const localTravelApi = {
     });
   },
 };
+
+export { searchPlaces, resolveTripPlaces, listPlaces };
