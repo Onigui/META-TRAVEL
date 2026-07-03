@@ -56,9 +56,15 @@ npm start
 
 ## GitHub Pages
 
-1. Settings → Pages → Source: **GitHub Actions**
-2. Push na `main` ou rode **Deploy GitHub Pages** manualmente
-3. URL: https://onigui.github.io/META-TRAVEL/
+**Ativação manual (obrigatória, uma vez):**
+
+1. https://github.com/Onigui/META-TRAVEL/settings/pages
+2. **Build and deployment** → **Source** → **GitHub Actions**
+3. Push na `main` ou rode **Deploy GitHub Pages** manualmente
+
+URL: https://onigui.github.io/META-TRAVEL/
+
+> O `GITHUB_TOKEN` do workflow não pode ativar o Pages automaticamente. Sem esse passo, o deploy falha com `Get Pages site failed`.
 
 ## Variáveis de ambiente
 
