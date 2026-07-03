@@ -22,17 +22,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Verificar se GitHub Pages está ativado
+        run: |
+          STATUS=$(curl -s -o /tmp/pages.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages")
+          if [ "$STATUS" = "404" ]; then
+            echo "::error title=GitHub Pages não ativado::Ative uma vez em Settings → Pages → Build and deployment → Source: GitHub Actions. Depois reexecute este workflow."
+            echo ""
+            echo "URL: https://github.com/${{ github.repository }}/settings/pages"
+            exit 1
+          fi
+          echo "GitHub Pages já está ativado."
       - run: node scripts/build-pages.js
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
-          name: site-github-pages
           path: dist/pages
-          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: chrome-extension
           path: dist/meta-travel-extension-*.zip
           retention-days: 14
+          if-no-files-found: ignore
 
   deploy:
     needs: build
@@ -42,14 +54,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - run: node scripts/build-pages.js
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/pages
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
