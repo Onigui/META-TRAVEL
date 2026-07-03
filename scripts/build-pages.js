@@ -30,6 +30,9 @@ fs.copyFileSync(
   path.join(pagesDir, 'lib/travelEngine.js')
 );
 
+// Evita processamento Jekyll no GitHub Pages
+fs.writeFileSync(path.join(pagesDir, '.nojekyll'), '');
+
 execSync('node scripts/build-release.js', { cwd: root, stdio: 'inherit' });
 
 console.log(`Site GitHub Pages pronto: ${pagesDir}`);

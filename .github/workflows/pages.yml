@@ -12,16 +12,21 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+
       - name: Verificar se GitHub Pages está ativado
         run: |
           STATUS=$(curl -s -o /tmp/pages.json -w "%{http_code}" \
@@ -29,31 +34,31 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/pages")
           if [ "$STATUS" = "404" ]; then
-            echo "::error title=GitHub Pages não ativado::Ative uma vez em Settings → Pages → Build and deployment → Source: GitHub Actions. Depois reexecute este workflow."
-            echo ""
+            echo "::error title=GitHub Pages não ativado::Ative em Settings → Pages → Source: GitHub Actions"
             echo "URL: https://github.com/${{ github.repository }}/settings/pages"
             exit 1
           fi
-          echo "GitHub Pages já está ativado."
-      - run: node scripts/build-pages.js
+
+      - name: Build site
+        run: node scripts/build-pages.js
+
+      - name: Validar artefato
+        run: |
+          test -f dist/pages/index.html || (echo "index.html ausente" && exit 1)
+          ls -la dist/pages/
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: chrome-extension
           path: dist/meta-travel-extension-*.zip
           retention-days: 14
           if-no-files-found: ignore
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
