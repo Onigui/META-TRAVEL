@@ -29,14 +29,20 @@ router.get('/partners', (_req, res) => {
   res.json(listPartners());
 });
 
+router.get('/travel-requirements', (req, res) => {
+  const { getTravelRequirements } = require('../shared/travelRequirements.cjs');
+  const country = req.query.country || req.query.destination || '';
+  res.json(getTravelRequirements(country));
+});
+
 router.get('/status', (_req, res) => {
   const amadeus = require('./adapters/amadeusClient');
   const booking = require('./adapters/bookingClient');
   const rentalcars = require('./adapters/rentalcarsClient');
   res.json({
-    amadeus: amadeus.isConfigured() ? 'configured' : 'mock-fallback',
-    booking: booking.isConfigured() ? 'configured' : 'mock-fallback',
-    rentalcars: rentalcars.isConfigured() ? 'configured' : 'mock-fallback',
+    amadeus: amadeus.isConfigured() ? 'configured' : 'not-configured',
+    booking: booking.isConfigured() ? 'configured' : 'not-configured',
+    rentalcars: rentalcars.isConfigured() ? 'configured' : 'not-configured',
     partners: partnerStore.listPartners().length,
     captures: partnerStore.listCaptures(5).length,
   });

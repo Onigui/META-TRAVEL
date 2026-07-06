@@ -1,12 +1,9 @@
-/** Motor Meta Travel 100% no navegador — GitHub Pages e extensão */
+/** Motor Meta Travel — vitrine com dados reais (capturas, API remota, links oficiais) */
 
 import { listPlaces, resolveTripPlaces, searchPlaces } from './places.js';
-import {
-  generateFlights,
-  generateHotels,
-  generateCars,
-  generateAllInclusive,
-} from './mockPricing.js';
+import { capturesToSearchResults, mergeSearchResults } from './captureBridge.js';
+import { getTravelRequirements } from './travelRequirements.js';
+import { buildGoogleFlightsUrl, buildGoogleHotelsUrl, buildRentalcarsUrl } from './googleFlights.js';
 
 export const DESTINATIONS = listPlaces();
 
@@ -40,7 +37,7 @@ function addDays(dateStr, days) {
 }
 
 function rankByPrice(items) {
-  return [...items].sort((a, b) => a.basePrice - b.basePrice);
+  return [...(items || [])].sort((a, b) => a.basePrice - b.basePrice);
 }
 
 function getPartner(id) {
@@ -111,141 +108,256 @@ function wrapUrl(originalUrl, { checkoutId, type, provider, stepIndex }) {
 
 const checkoutSessions = new Map();
 
-export const localTravelApi = {
-  mode: 'local',
+async function remoteSearch(base, params) {
+  const q = new URLSearchParams({
+    destinationCity: params.destinationCity || '',
+    destinationCountry: params.destinationCountry || '',
+    destinationAirport: params.destinationAirport || '',
+    originCity: params.originCity || '',
+    originCountry: params.originCountry || '',
+    originAirport: params.originAirport || '',
+    passengers: params.passengers || 1,
+    guests: params.guests || 2,
+    nights: params.nights || 5,
+    departureDate: params.departureDate || '',
+    returnDate: params.returnDate || '',
+  });
+  const res = await fetch(`${base.replace(/\/$/, '')}/search?${q}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'API indisponível');
+  return data;
+}
 
-  getStatus() {
-    return Promise.resolve({
-      amadeus: 'estimate-local',
-      booking: 'estimate-local',
-      rentalcars: 'estimate-local',
-      partners: PARTNERS.length,
-      mode: 'local',
-    });
-  },
-
-  getDestinations() {
-    return Promise.resolve({ destinations: listPlaces() });
-  },
-
-  searchPlaces(query) {
-    return Promise.resolve({ places: searchPlaces(query, 12) });
-  },
-
-  getPartners() {
-    return Promise.resolve({ partners: PARTNERS });
-  },
-
-  search(params) {
-    const { origin, destination } = resolveTripPlaces(params);
-    const checkIn = params.departureDate || params.checkIn || defaultDepartureDate();
-    const nights = params.nights || 5;
-    const guests = params.guests || 2;
-    const passengers = params.passengers || 1;
-
-    const flights = generateFlights({
-      origin,
-      destination,
-      passengers,
+function buildExternalLinks({ origin, destination, checkIn, nights, guests, passengers, returnDate }) {
+  return {
+    googleFlights: buildGoogleFlightsUrl({
+      originAirport: origin.airport,
+      destinationAirport: destination.airport,
       departureDate: checkIn,
-    });
-    const hotels = generateHotels({ destination, nights, guests, checkIn });
-    const cars = generateCars({
-      destination,
-      days: nights,
+      returnDate,
+      passengers,
+    }),
+    googleHotels: buildGoogleHotelsUrl({
+      city: destination.city,
+      country: destination.country,
+      checkIn,
+      nights,
+      guests,
+    }),
+    rentalcars: buildRentalcarsUrl({
+      city: destination.city,
+      airport: destination.airport,
       pickUpDate: checkIn,
       dropOffDate: addDays(checkIn, nights),
-    });
-    const allInclusive = generateAllInclusive({ destination, nights, guests });
+    }),
+  };
+}
 
-    return Promise.resolve({
-      destinationId: destination.id,
-      destination: { city: destination.city, country: destination.country, airport: destination.airport },
-      origin: { city: origin.city, country: origin.country, airport: origin.airport },
-      passengers,
-      guests,
-      nights,
-      checkIn,
-      returnDate: params.returnDate || null,
-      flights: rankByPrice(flights),
-      hotels: rankByPrice(hotels),
-      cars: rankByPrice(cars),
-      allInclusive: rankByPrice(allInclusive),
-      dataSources: { flights: 'estimate', hotels: 'estimate', cars: 'estimate', allInclusive: 'estimate' },
-      mode: 'local',
-      note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados pela distância e região.`,
-    });
-  },
+function resolveSources(flights, hotels, cars, remote) {
+  const src = (items) => {
+    if (!items?.length) return 'none';
+    const s = items[0]?.source;
+    if (s === 'capture') return 'capture';
+    if (s === 'amadeus' || s === 'booking' || s === 'rentalcars') return s;
+    return remote ? 'api' : 'capture';
+  };
+  return {
+    flights: src(flights),
+    hotels: src(hotels),
+    cars: src(cars),
+    allInclusive: 'none',
+  };
+}
 
-  build(selection) {
-    const summary = buildTripSummary(selection);
-    return Promise.resolve({ ...summary, builtAt: new Date().toISOString() });
-  },
+async function performSearch(params, { getCaptures, remoteApiBase } = {}) {
+  const { origin, destination } = resolveTripPlaces(params);
+  const checkIn = params.departureDate || params.checkIn || defaultDepartureDate();
+  const nights = params.nights || 5;
+  const guests = params.guests || 2;
+  const passengers = params.passengers || 1;
+  const travelRequirements = getTravelRequirements(destination.country);
+  const externalLinks = buildExternalLinks({
+    origin,
+    destination,
+    checkIn,
+    nights,
+    guests,
+    passengers,
+    returnDate: params.returnDate,
+  });
 
-  createCheckout(selection) {
-    const summary = buildTripSummary(selection);
-    const checkoutId = `ck-local-${Date.now()}`;
-    const sorted = [...summary.components].sort(
-      (a, b) => STEP_ORDER.indexOf(a.type) - STEP_ORDER.indexOf(b.type)
-    );
-
-    const steps = sorted.map((c, stepIndex) => ({
-      stepIndex,
-      type: c.type,
-      label: STEP_LABELS[c.type],
-      name: c.name,
-      finalPrice: c.finalPrice,
-      commissionRate: COMMISSION_RATES[c.type] || 0,
-      estimatedCommission: Math.round(c.finalPrice * ((COMMISSION_RATES[c.type] || 0) / 100)),
-      status: 'pending',
-      trackedUrl: wrapUrl(c.bookingUrl, { checkoutId, type: c.type, provider: c.provider, stepIndex }),
-      goUrl: wrapUrl(c.bookingUrl, { checkoutId, type: c.type, provider: c.provider, stepIndex }),
-    }));
-
-    const session = {
-      checkoutId,
-      status: 'pending',
-      total: summary.total,
-      estimatedCommission: steps.reduce((s, x) => s + x.estimatedCommission, 0),
-      steps,
-      stepCount: steps.length,
-    };
-
-    checkoutSessions.set(checkoutId, session);
+  let remoteData = null;
+  if (remoteApiBase) {
     try {
-      localStorage.setItem(`mt-checkout-${checkoutId}`, JSON.stringify(session));
-    } catch { /* ignore */ }
-
-    return Promise.resolve(session);
-  },
-
-  getCheckout(checkoutId) {
-    let session = checkoutSessions.get(checkoutId);
-    if (!session) {
-      try {
-        session = JSON.parse(localStorage.getItem(`mt-checkout-${checkoutId}`));
-      } catch { /* ignore */ }
+      remoteData = await remoteSearch(remoteApiBase, params);
+    } catch {
+      remoteData = null;
     }
-    if (!session) return Promise.reject(new Error('Checkout não encontrado.'));
-    return Promise.resolve(session);
-  },
+  }
 
-  completeCheckoutStep(checkoutId, stepIndex) {
-    return this.getCheckout(checkoutId).then((session) => {
-      const steps = [...session.steps];
-      steps[stepIndex] = { ...steps[stepIndex], status: 'completed' };
-      const updated = {
-        ...session,
+  const captures = getCaptures ? await getCaptures() : [];
+  const fromCaptures = capturesToSearchResults(captures, {
+    origin,
+    destination,
+    originAirport: origin.airport,
+    destinationAirport: destination.airport,
+  });
+
+  const merged = mergeSearchResults(
+    {
+      flights: remoteData?.flights || [],
+      hotels: remoteData?.hotels || [],
+      cars: remoteData?.cars || [],
+      allInclusive: remoteData?.allInclusive || [],
+    },
+    fromCaptures
+  );
+
+  const hasResults =
+    merged.flights.length || merged.hotels.length || merged.cars.length || merged.allInclusive.length;
+
+  const dataSources = resolveSources(merged.flights, merged.hotels, merged.cars, !!remoteData);
+
+  return {
+    destinationId: destination.id,
+    destination: { city: destination.city, country: destination.country, airport: destination.airport },
+    origin: { city: origin.city, country: origin.country, airport: origin.airport },
+    passengers,
+    guests,
+    nights,
+    checkIn,
+    returnDate: params.returnDate || null,
+    flights: rankByPrice(merged.flights),
+    hotels: rankByPrice(merged.hotels),
+    cars: rankByPrice(merged.cars),
+    allInclusive: rankByPrice(merged.allInclusive),
+    travelRequirements,
+    externalLinks,
+    dataSources,
+    mode: remoteData ? 'api' : captures.length ? 'capture' : 'showcase',
+    hasResults,
+    note: hasResults
+      ? `Rota ${origin.city} → ${destination.city}. Valores de fontes reais (API ou capturas do Google Voos / sites parceiros).`
+      : `Rota ${origin.city} → ${destination.city}. Busque no Google Voos e use a extensão para importar preços reais, ou configure a API Meta Travel.`,
+  };
+}
+
+function createCheckoutHandlers() {
+  return {
+    build(selection) {
+      const summary = buildTripSummary(selection);
+      return Promise.resolve({ ...summary, builtAt: new Date().toISOString() });
+    },
+
+    createCheckout(selection) {
+      const summary = buildTripSummary(selection);
+      const checkoutId = `ck-local-${Date.now()}`;
+      const sorted = [...summary.components].sort(
+        (a, b) => STEP_ORDER.indexOf(a.type) - STEP_ORDER.indexOf(b.type)
+      );
+
+      const steps = sorted.map((c, stepIndex) => ({
+        stepIndex,
+        type: c.type,
+        label: STEP_LABELS[c.type],
+        name: c.name,
+        finalPrice: c.finalPrice,
+        commissionRate: COMMISSION_RATES[c.type] || 0,
+        estimatedCommission: Math.round(c.finalPrice * ((COMMISSION_RATES[c.type] || 0) / 100)),
+        status: 'pending',
+        trackedUrl: wrapUrl(c.bookingUrl, { checkoutId, type: c.type, provider: c.provider, stepIndex }),
+        goUrl: wrapUrl(c.bookingUrl, { checkoutId, type: c.type, provider: c.provider, stepIndex }),
+      }));
+
+      const session = {
+        checkoutId,
+        status: 'pending',
+        total: summary.total,
+        estimatedCommission: steps.reduce((s, x) => s + x.estimatedCommission, 0),
         steps,
-        status: steps.every((s) => s.status === 'completed') ? 'completed' : 'in_progress',
+        stepCount: steps.length,
       };
-      checkoutSessions.set(checkoutId, updated);
+
+      checkoutSessions.set(checkoutId, session);
       try {
-        localStorage.setItem(`mt-checkout-${checkoutId}`, JSON.stringify(updated));
+        localStorage.setItem(`mt-checkout-${checkoutId}`, JSON.stringify(session));
       } catch { /* ignore */ }
-      return updated;
-    });
-  },
-};
+
+      return Promise.resolve(session);
+    },
+
+    getCheckout(checkoutId) {
+      let session = checkoutSessions.get(checkoutId);
+      if (!session) {
+        try {
+          session = JSON.parse(localStorage.getItem(`mt-checkout-${checkoutId}`));
+        } catch { /* ignore */ }
+      }
+      if (!session) return Promise.reject(new Error('Checkout não encontrado.'));
+      return Promise.resolve(session);
+    },
+
+    completeCheckoutStep(checkoutId, stepIndex) {
+      return this.getCheckout(checkoutId).then((session) => {
+        const steps = [...session.steps];
+        steps[stepIndex] = { ...steps[stepIndex], status: 'completed' };
+        const updated = {
+          ...session,
+          steps,
+          status: steps.every((s) => s.status === 'completed') ? 'completed' : 'in_progress',
+        };
+        checkoutSessions.set(checkoutId, updated);
+        try {
+          localStorage.setItem(`mt-checkout-${checkoutId}`, JSON.stringify(updated));
+        } catch { /* ignore */ }
+        return updated;
+      });
+    },
+  };
+}
+
+export function createTravelApi({ getCaptures, remoteApiBase, mode = 'showcase' } = {}) {
+  const checkout = createCheckoutHandlers();
+
+  return {
+    mode,
+
+    getStatus() {
+      return Promise.resolve({
+        amadeus: remoteApiBase ? 'remote-api' : 'configure-api',
+        booking: remoteApiBase ? 'remote-api' : 'configure-api',
+        rentalcars: remoteApiBase ? 'remote-api' : 'configure-api',
+        partners: PARTNERS.length,
+        mode,
+        remoteApiBase: remoteApiBase || null,
+      });
+    },
+
+    getDestinations() {
+      return Promise.resolve({ destinations: listPlaces() });
+    },
+
+    searchPlaces(query) {
+      return Promise.resolve({ places: searchPlaces(query, 12) });
+    },
+
+    getPartners() {
+      return Promise.resolve({ partners: PARTNERS });
+    },
+
+    getTravelRequirements(country) {
+      return Promise.resolve(getTravelRequirements(country));
+    },
+
+    search(params) {
+      return performSearch(params, { getCaptures, remoteApiBase });
+    },
+
+    ...checkout,
+  };
+}
+
+/** API padrão no navegador (GitHub Pages) — sem capturas locais */
+export const localTravelApi = createTravelApi({ mode: 'showcase' });
 
 export { searchPlaces, resolveTripPlaces, listPlaces };

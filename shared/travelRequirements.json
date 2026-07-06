@@ -1,0 +1,258 @@
+{
+  "Brasil": {
+    "country": "Brasil",
+    "citizenship": "Brasil",
+    "documents": ["Documento de identidade (RG) ou CNH válida para voos domésticos"],
+    "passportRequired": false,
+    "visa": "none",
+    "summary": "Viagens dentro do Brasil exigem documento oficial com foto (RG ou CNH). Passaporte não é obrigatório em voos nacionais.",
+    "steps": [
+      "Leve RG original ou CNH válida (física ou digital no app Carteira Digital de Trânsito, conforme regras da companhia).",
+      "Para menores, consulte a companhia aérea sobre documentação adicional."
+    ],
+    "sources": [
+      { "title": "Documentação em voos nacionais — ANAC", "url": "https://www.gov.br/anac/pt-br/assuntos/passageiros" },
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" }
+    ]
+  },
+  "EUA": {
+    "country": "EUA",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 6,
+    "visa": "required",
+    "visaType": "Visto de turismo B-1/B-2",
+    "summary": "Cidadãos brasileiros precisam de passaporte válido e visto americano de turismo (B-1/B-2) para entrar nos Estados Unidos. O ESTA não se aplica a passaportes brasileiros.",
+    "steps": [
+      "Tire ou renove o passaporte na Polícia Federal (agendamento online).",
+      "Preencha o formulário DS-160 no site do Departamento de Estado dos EUA.",
+      "Pague a taxa do visto (MRV) e agende entrevista no CASV/consulado americano no Brasil.",
+      "Leve documentos comprobatórios à entrevista conforme orientação do consulado."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Vistos para brasileiros — Embaixada EUA", "url": "https://br.usembassy.gov/pt/visas-pt/" },
+      { "title": "Formulário DS-160", "url": "https://ceac.state.gov/genniv/" }
+    ]
+  },
+  "França": {
+    "country": "França",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 3,
+    "visa": "none_short_stay",
+    "visaType": "Isento para turismo até 90 dias no Espaço Schengen",
+    "summary": "Brasileiros portadores de passaporte válido podem entrar na França (Schengen) sem visto para turismo por até 90 dias em cada período de 180 dias.",
+    "steps": [
+      "Passaporte com validade mínima de 3 meses após a data de saída prevista da Europa.",
+      "Seguro viagem com cobertura mínima de €30.000 é exigido na Schengen.",
+      "Comprovante de hospedagem e meios financeiros podem ser solicitados na imigração."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Viagem à Europa — Ministério das Relações Exteriores", "url": "https://www.gov.br/mre/pt-br/embaixada-berlim/ingles/informacoes-sobre-vistos-visa-information/informacoes-sobre-a-entrada-de-brasileiros-no-espaco-schengen" },
+      { "title": "Espaço Schengen — Comissão Europeia", "url": "https://travel-europe.europa.eu/pt/etias" }
+    ]
+  },
+  "Portugal": {
+    "country": "Portugal",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 3,
+    "visa": "none_short_stay",
+    "visaType": "Isento para turismo até 90 dias no Espaço Schengen",
+    "summary": "Brasileiros podem visitar Portugal sem visto por até 90 dias (turismo) no regime Schengen, com passaporte válido.",
+    "steps": [
+      "Renove o passaporte na Polícia Federal se necessário.",
+      "Contrate seguro viagem Schengen (€30.000 mínimo).",
+      "A partir de 2026, verifique exigência do ETIAS (autorização eletrônica europeia) no site oficial da UE."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Consulado de Portugal no Brasil", "url": "https://www.gov.br/mre/pt-br/consulado-portugal-rio" },
+      { "title": "ETIAS — União Europeia", "url": "https://travel-europe.europa.eu/pt/etias" }
+    ]
+  },
+  "Espanha": {
+    "country": "Espanha",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 3,
+    "visa": "none_short_stay",
+    "visaType": "Isento Schengen até 90 dias",
+    "summary": "Brasileiros entram na Espanha sem visto para estadias curtas de turismo (até 90 dias no Schengen).",
+    "steps": [
+      "Passaporte com validade além da data de retorno.",
+      "Seguro viagem internacional com cobertura Schengen.",
+      "Verifique ETIAS no portal oficial da UE antes de viajar."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Embaixada da Espanha — Vistos", "url": "https://www.exteriores.gob.es/Consulados/saopaulo/pt/Paginas/inicio.aspx" }
+    ]
+  },
+  "Itália": {
+    "country": "Itália",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 3,
+    "visa": "none_short_stay",
+    "visaType": "Isento Schengen até 90 dias",
+    "summary": "Brasileiros visitam a Itália sem visto por turismo (até 90 dias na área Schengen).",
+    "steps": [
+      "Passaporte válido na Polícia Federal.",
+      "Seguro viagem Schengen obrigatório.",
+      "Consulte ETIAS no site oficial da União Europeia."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Consulado Italiano — Vistos", "url": "https://conssanpaolo.esteri.it/pt/servizi-consolari-e-visti/" }
+    ]
+  },
+  "Reino Unido": {
+    "country": "Reino Unido",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 6,
+    "visa": "eta",
+    "visaType": "Electronic Travel Authorisation (ETA)",
+    "summary": "Brasileiros precisam de passaporte e autorização eletrônica ETA para visitar o Reino Unido (turismo).",
+    "steps": [
+      "Tire o passaporte na Polícia Federal.",
+      "Solicite a ETA no site oficial do governo britânico antes da viagem.",
+      "Pague a taxa da ETA e aguarde aprovação por e-mail."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "ETA Reino Unido — Gov.UK", "url": "https://www.gov.uk/guidance/electronic-travel-authorisation-eta" },
+      { "title": "Aplicar ETA", "url": "https://www.gov.uk/eta" }
+    ]
+  },
+  "México": {
+    "country": "México",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "visa": "none_short_stay",
+    "visaType": "Isento para turismo",
+    "summary": "Brasileiros podem entrar no México com passaporte válido para turismo sem visto prévio (permanência conforme autorização na imigração).",
+    "steps": [
+      "Passaporte com validade adequada.",
+      "Preencha o formulário FMM (migração mexicana) se solicitado no voo ou online.",
+      "Comprove motivo de turismo se solicitado na entrada."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Embaixada do México no Brasil", "url": "https://embamex.sre.gob.mx/brasil/" }
+    ]
+  },
+  "Argentina": {
+    "country": "Argentina",
+    "citizenship": "Brasil",
+    "documents": ["RG original", "Passaporte", "ou CNH (conforme acordos Mercosul)"],
+    "passportRequired": false,
+    "visa": "none",
+    "visaType": "Mercosul — documento de viagem bilateral",
+    "summary": "Brasileiros podem entrar na Argentina com RG, CNH ou passaporte válido, sem visto, para turismo.",
+    "steps": [
+      "Leve RG original com menos de 10 anos de emissão (recomendado) ou passaporte.",
+      "Menores de idade: consulte exigências de autorização de viagem.",
+      "Na fronteira terrestre/aérea, siga orientações da migração argentina."
+    ],
+    "sources": [
+      { "title": "Viagem ao exterior — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte/viagem-ao-exterior" },
+      { "title": "Consulado Argentino", "url": "https://www.gov.br/mre/pt-br/consulado-argentina-sao-paulo" }
+    ]
+  },
+  "Chile": {
+    "country": "Chile",
+    "citizenship": "Brasil",
+    "documents": ["RG ou passaporte válido"],
+    "passportRequired": false,
+    "visa": "none",
+    "summary": "Brasileiros entram no Chile com documento de identidade válido (RG ou passaporte), sem visto para turismo.",
+    "steps": [
+      "RG original ou passaporte com validade.",
+      "Pode ser exigido comprovante de vacina ou declaração sanitária — verifique alertas do MRE antes de viajar."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Alertas de viagem — MRE", "url": "https://www.gov.br/mre/pt-br/embaixada-consulado" }
+    ]
+  },
+  "Japão": {
+    "country": "Japão",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "visa": "none_short_stay",
+    "visaType": "Isento até 90 dias (turismo)",
+    "summary": "Brasileiros portadores de passaporte válido podem permanecer no Japão por até 90 dias sem visto (turismo/negócios curtos).",
+    "steps": [
+      "Passaporte com validade durante toda a estadia.",
+      "Comprovante de passagem de volta pode ser solicitado.",
+      "Não é permitido trabalhar com essa isenção de visto."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Embaixada do Japão no Brasil", "url": "https://www.br.emb-japan.go.jp/itprtop_pt/index.html" }
+    ]
+  },
+  "Emirados Árabes Unidos": {
+    "country": "Emirados Árabes Unidos",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte válido"],
+    "passportRequired": true,
+    "passportValidityMonths": 6,
+    "visa": "on_arrival",
+    "visaType": "Visto na chegada (Dubai/EAU)",
+    "summary": "Brasileiros recebem visto na chegada nos Emirados Árabes Unidos para turismo (sujeito a regras vigentes e validade do passaporte).",
+    "steps": [
+      "Passaporte com mínimo de 6 meses de validade.",
+      "Visto de turismo é emitido na imigração do aeroporto (taxa pode aplicar).",
+      "Confirme regras atualizadas com a companhia aérea e embaixada dos EAU."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Alertas MRE — Orientações consulares", "url": "https://www.gov.br/mre/pt-br/embaixada-consulado" }
+    ]
+  },
+  "Colômbia": {
+    "country": "Colômbia",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte ou RG válido"],
+    "passportRequired": false,
+    "visa": "none",
+    "summary": "Brasileiros entram na Colômbia com passaporte ou RG válido, sem visto para turismo.",
+    "steps": [
+      "Documento original com foto.",
+      "Preencha o formulário de migração Check-Mig antes do embarque (site oficial Colômbia)."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Check-Mig Colômbia", "url": "https://apps.migracioncolombia.gov.co/pre-registro/" }
+    ]
+  },
+  "Peru": {
+    "country": "Peru",
+    "citizenship": "Brasil",
+    "documents": ["Passaporte ou RG válido"],
+    "passportRequired": false,
+    "visa": "none",
+    "summary": "Brasileiros não precisam de visto para turismo no Peru (documento de identidade válido).",
+    "steps": [
+      "RG ou passaporte com validade.",
+      "Declaração de bagagem e alfândega conforme orientação no aeroporto."
+    ],
+    "sources": [
+      { "title": "Passaporte — Polícia Federal", "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte" },
+      { "title": "Embaixada do Peru", "url": "https://www.gov.br/mre/pt-br/embaixada-consulado" }
+    ]
+  }
+}

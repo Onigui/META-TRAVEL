@@ -1,4 +1,5 @@
-const AMADEUS_API_URL = process.env.AMADEUS_API_URL || 'https://test.api.amadeus.com';
+const { getAirportName } = require('../../shared/placeMeta.cjs');
+const { getBookingUrl } = require('../../shared/flightDetails.cjs');
 const AMADEUS_CLIENT_ID = process.env.AMADEUS_CLIENT_ID || '';
 const AMADEUS_CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET || '';
 
@@ -82,13 +83,55 @@ function addDays(dateStr, days) {
 
 function mapFlightOffer(offer, { origin, destination, passengers, departureDate }) {
   const itinerary = offer.itineraries?.[0];
-  const segment = itinerary?.segments?.[0];
-  const lastSegment = itinerary?.segments?.[itinerary.segments.length - 1];
+  const segs = itinerary?.segments || [];
+  const segment = segs[0];
+  const lastSegment = segs[segs.length - 1];
   const carrier = segment?.carrierCode || 'XX';
   const airline = CARRIER_NAMES[carrier] || carrier;
   const provider = (CARRIER_PARTNERS[carrier] || carrier).toLowerCase();
-  const stops = Math.max(0, (itinerary?.segments?.length || 1) - 1);
+  const stops = Math.max(0, segs.length - 1);
   const price = Number.parseFloat(offer.price?.total || offer.price?.grandTotal || 0);
+  const fareDetail = offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
+  const cabin = fareDetail?.cabin || 'ECONOMY';
+  const includedBags = fareDetail?.includedCheckedBags?.quantity ?? null;
+
+  const segments = segs.map((s) => ({
+    from: s.departure?.iataCode,
+    to: s.arrival?.iataCode,
+    fromName: getAirportName(s.departure?.iataCode, s.departure?.iataCode),
+    toName: getAirportName(s.arrival?.iataCode, s.arrival?.iataCode),
+    duration: formatDuration(s.duration),
+    flightNumber: `${s.carrierCode || ''} ${s.number || ''}`.trim(),
+    departure: s.departure?.at?.slice(11, 16),
+    arrival: s.arrival?.at?.slice(11, 16),
+  }));
+
+  const layovers = [];
+  for (let i = 0; i < segs.length - 1; i++) {
+    const arr = segs[i].arrival?.at;
+    const dep = segs[i + 1].departure?.at;
+    let wait = '—';
+    if (arr && dep) {
+      const mins = Math.round((new Date(dep) - new Date(arr)) / 60000);
+      wait = formatDuration(`PT${Math.floor(mins / 60)}H${mins % 60}M`);
+    }
+    const code = segs[i].arrival?.iataCode;
+    layovers.push({
+      airport: code,
+      airportName: getAirportName(code, code),
+      city: code,
+      duration: wait,
+      note: 'Conexão verificada via API',
+    });
+  }
+
+  const baggage = {
+    carryOnKg: 10,
+    checkedBags: includedBags ?? (stops > 0 ? 1 : 0),
+    checkedWeightKg: 23,
+    extraCheckedBagPrice: 350,
+    extraBagWeightKg: 23,
+  };
 
   return {
     id: `amadeus-${offer.id}`,
@@ -108,10 +151,27 @@ function mapFlightOffer(offer, { origin, destination, passengers, departureDate 
       departureDate: segment?.departure?.at?.slice(0, 10) || departureDate,
       passengers,
       carrierCode: carrier,
-      cabin: offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin || 'ECONOMY',
+      cabin,
+      fareBrand: offer.pricingOptions?.fareType?.[0] || cabin,
+      segments,
+      layovers,
+      layoverSummary:
+        stops === 0
+          ? 'Voo direto'
+          : layovers.map((l) => `${l.airportName} (${l.duration})`).join(' · '),
+      baggage,
+      included: [
+        'Item pessoal',
+        `Bagagem de mão (confira limite na companhia)`,
+        ...(baggage.checkedBags > 0 ? [`${baggage.checkedBags} bagagem(ns) despachada(s)`] : []),
+      ],
+      notIncluded: baggage.checkedBags > 0 ? [] : ['Bagagem despachada — consulte tarifa na companhia'],
+      availability: 'verified',
+      availabilityNote: 'Preço e rota consultados via API Amadeus. Confirme bagagem e regras no site da companhia antes de comprar.',
     },
-    bookingUrl: `https://www.google.com/travel/flights?q=Flights+${origin}+to+${destination}+on+${departureDate}`,
+    bookingUrl: getBookingUrl(provider, origin, destination, departureDate),
     source: 'amadeus',
+    isEstimate: false,
   };
 }
 

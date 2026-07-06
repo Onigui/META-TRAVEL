@@ -1,4 +1,12 @@
 const { haversineKm } = require('./places.cjs');
+const {
+  pickLayoverAirports,
+  buildRouteSegments,
+  buildLayovers,
+  getFareProfile,
+  getBookingUrl,
+  CARRIER_CODES,
+} = require('./flightDetails.cjs');
 
 const AIRLINES = [
   { id: 'latam', name: 'LATAM', partner: 'latam' },
@@ -16,12 +24,6 @@ function jitter(base, pct = 0.08) {
   return Math.round(v / 10) * 10;
 }
 
-function formatDuration(minutes) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}h${String(m).padStart(2, '0')}`;
-}
-
 function estimateFlightBase(origin, destination) {
   const km = haversineKm(origin.lat, origin.lon, destination.lat, destination.lon);
   const distFactor = Math.max(800, km * 0.42);
@@ -30,38 +32,72 @@ function estimateFlightBase(origin, destination) {
   return distFactor * idx;
 }
 
+function formatDurationMinutes(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}h${String(m).padStart(2, '0')}`;
+}
+
 function generateFlights({ origin, destination, passengers = 1, departureDate }) {
   const base = estimateFlightBase(origin, destination);
   const route = `${origin.airport} → ${destination.airport}`;
   const km = haversineKm(origin.lat, origin.lon, destination.lat, destination.lon);
   const longHaul = km > 6000;
+  const intl = origin.country !== destination.country;
 
   return AIRLINES.slice(0, longHaul ? 6 : 4).map((al, i) => {
     const stops = i === 0 && km > 3500 ? 0 : i < 2 ? 0 : i < 4 ? 1 : 2;
-    const mult = 1 - i * 0.06 + stops * 0.12;
+    const fare = getFareProfile(al.id, i % 3);
+    const mult = (1 - i * 0.06 + stops * 0.12) * fare.mult;
     const price = jitter(base * mult) * passengers;
     const mins = Math.round((km / 800) * 60 + stops * 120 + 90);
+    const duration = formatDurationMinutes(mins);
+    const layoverCodes = pickLayoverAirports(origin, destination, stops);
+    const layovers = buildLayovers(layoverCodes);
+    const carrierCode = CARRIER_CODES[al.id] || 'XX';
+    const segments = buildRouteSegments(origin, destination, layoverCodes, mins, carrierCode);
 
     return {
       id: `fl-${destination.id}-${al.id}-${i}`,
       type: 'flight',
       provider: al.id,
-      name: `${al.name} · ${origin.city} → ${destination.city}`,
+      name: `${al.name} · ${fare.brand} · ${origin.city} → ${destination.city}`,
       basePrice: price,
       partnerId: al.partner,
       details: {
         airline: al.name,
         origin: origin.airport,
         destination: destination.airport,
+        originCountry: origin.country,
+        destinationCountry: destination.country,
         route,
         stops,
-        duration: formatDuration(mins),
+        duration,
         departure: `${6 + i * 2}:${i % 2 ? '30' : '15'}`,
         departureDate,
         passengers,
+        fareBrand: fare.brand,
+        cabin: fare.cabin,
+        intl,
+        layovers,
+        layoverSummary:
+          stops === 0
+            ? 'Voo direto'
+            : layovers.map((l) => `${l.airportName} (${l.duration})`).join(' · '),
+        segments: segments.map((s, si) => ({
+          ...s,
+          flightNumber: `${carrierCode} ${1200 + i * 10 + si}`,
+        })),
+        baggage: fare.baggage,
+        included: fare.included,
+        notIncluded: fare.notIncluded,
+        availability: 'estimate',
+        availabilityNote:
+          'Preço e disponibilidade estimados. Não há consulta em tempo real à companhia — confirme no site oficial antes de comprar.',
       },
-      bookingUrl: `https://www.google.com/travel/flights?q=Flights+from+${origin.airport}+to+${destination.airport}+on+${departureDate}`,
+      bookingUrl: getBookingUrl(al.id, origin.airport, destination.airport, departureDate),
       source: 'estimate',
+      isEstimate: true,
     };
   });
 }
@@ -158,6 +194,30 @@ function generateHotels({ destination, nights = 5, guests = 2, checkIn }) {
   });
 }
 
+const CAR_VISUALS = [
+  {
+    images: [
+      'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', 'Direção hidráulica', '5 portas', '2 malas'],
+  },
+  {
+    images: [
+      'https://images.unsplash.com/photo-1623869675781-12e04ca76d1e?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1494976388531-d1058498ceb8?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', 'Automático', '4 portas', '3 malas', 'Bluetooth'],
+  },
+  {
+    images: [
+      'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1533473356711-8565e4478abe?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', '7 lugares', 'SUV', '4 malas', 'GPS'],
+  },
+];
+
 function generateCars({ destination, days = 5, pickUpDate, dropOffDate }) {
   const idx = destination.priceIndex || 1;
   const types = [
@@ -168,6 +228,7 @@ function generateCars({ destination, days = 5, pickUpDate, dropOffDate }) {
 
   return types.map((t, i) => {
     const perDay = jitter(180 * idx * t.mult, 0.1);
+    const visual = CAR_VISUALS[i] || CAR_VISUALS[0];
     return {
       id: `car-${destination.id}-${i}`,
       type: 'car',
@@ -182,6 +243,9 @@ function generateCars({ destination, days = 5, pickUpDate, dropOffDate }) {
         pickUpDate,
         dropOffDate,
         location: destination.airport !== 'XXX' ? destination.airport : destination.city,
+        image: visual.images[0],
+        images: visual.images,
+        amenities: visual.amenities,
       },
       bookingUrl: `https://www.rentalcars.com/SearchResults.do?affiliateCode=meta-travel&pickupLocation=${encodeURIComponent(destination.city)}`,
       source: 'estimate',

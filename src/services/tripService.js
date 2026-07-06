@@ -1,4 +1,10 @@
 const { resolveTripPlaces, listPlaces } = require('../../shared/places.cjs');
+const { getTravelRequirements } = require('../../shared/travelRequirements.cjs');
+const {
+  buildGoogleFlightsUrl,
+  buildGoogleHotelsUrl,
+  buildRentalcarsUrl,
+} = require('../../shared/googleFlights.cjs');
 const partnerStore = require('./partnerStore');
 const { buildTripSummary, rankByPrice } = require('../../shared/tripEngineBridge');
 
@@ -82,8 +88,32 @@ async function searchAllOptions(params) {
     hotels: rankByPrice(hotels),
     cars: rankByPrice(cars),
     allInclusive: rankByPrice(allInclusive),
+    travelRequirements: getTravelRequirements(destination.country),
+    externalLinks: {
+      googleFlights: buildGoogleFlightsUrl({
+        originAirport: origin.airport,
+        destinationAirport: destination.airport,
+        departureDate: checkInDate,
+        returnDate,
+        passengers,
+      }),
+      googleHotels: buildGoogleHotelsUrl({
+        city: destination.city,
+        country: destination.country,
+        checkIn: checkInDate,
+        nights,
+        guests,
+      }),
+      rentalcars: buildRentalcarsUrl({
+        city: destination.city,
+        airport: destination.airport,
+        pickUpDate: checkInDate,
+        dropOffDate: amadeus.addDays(checkInDate, rentalDays),
+      }),
+    },
     fetchedAt: new Date().toISOString(),
     mode: 'aggregated',
+    hasResults: flights.length + hotels.length + cars.length + allInclusive.length > 0,
     dataSources: {
       flights: resolveDataSource({
         configured: amadeus.isConfigured(),
@@ -102,7 +132,9 @@ async function searchAllOptions(params) {
       }),
       allInclusive: 'estimate',
     },
-    note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados com base na distância e região — configure .env para APIs reais.`,
+    note: flights.length || hotels.length || cars.length
+      ? `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Dados de APIs configuradas (Amadeus, Booking, Rentalcars).`
+      : `Nenhum resultado nas APIs. Configure AMADEUS_CLIENT_ID/SECRET, Booking ou Rentalcars no .env — ou use a extensão para importar do Google Voos.`,
   };
 }
 

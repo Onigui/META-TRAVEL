@@ -1,20 +1,36 @@
-/** Adaptador de API — remoto (Node) ou local (GitHub Pages) */
+/** Adaptador de API — remoto (Node), vitrine (capturas + links) ou híbrido */
 
 export async function initTravelApi() {
   const forceLocal = new URLSearchParams(window.location.search).has('local');
-  const isGitHubPages = window.location.hostname.includes('github.io');
+  let config = {};
 
-  if (forceLocal || isGitHubPages) {
-    const { localTravelApi } = await import('./lib/travelEngine.js');
-    return localTravelApi;
+  try {
+    const res = await fetch('config.json', { cache: 'no-store' });
+    if (res.ok) config = await res.json();
+  } catch { /* sem config */ }
+
+  const apiBase = config.apiBase || (!forceLocal && !window.location.hostname.includes('github.io') ? '/api' : null);
+
+  if (apiBase && !forceLocal) {
+    try {
+      const remote = createRemoteApi(apiBase);
+      await remote.getStatus();
+      return remote;
+    } catch {
+      /* fallback vitrine */
+    }
   }
 
-  return createRemoteApi('/api');
+  const { createTravelApi } = await import('./lib/travelEngine.js');
+  return createTravelApi({
+    mode: 'showcase',
+    remoteApiBase: config.apiBase || null,
+  });
 }
 
 function createRemoteApi(base) {
   async function request(path, options = {}) {
-    const res = await fetch(`${base}${path}`, {
+    const res = await fetch(`${base.replace(/\/$/, '')}${path}`, {
       headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
       ...options,
     });
@@ -29,6 +45,8 @@ function createRemoteApi(base) {
     getDestinations: () => request('/destinations'),
     searchPlaces: (q) => request(`/places?q=${encodeURIComponent(q || '')}`),
     getPartners: () => request('/partners'),
+    getTravelRequirements: (country) =>
+      request(`/travel-requirements?country=${encodeURIComponent(country || '')}`),
     search: (params) => {
       const q = new URLSearchParams({
         destinationCity: params.destinationCity || '',

@@ -1,7 +1,7 @@
 import { initTravelApi } from './api.js';
 import { getSearchParamsFromForm } from './lib/searchFormHelpers.js';
 import { initPlaceAutocompletes } from './lib/placeAutocomplete.js';
-import { renderOptionCard, bindOptionCards } from './lib/cardRender.js';
+import { renderOptionCard, bindOptionCards, renderTravelRequirementsPanel, renderSearchActions } from './lib/cardRender.js';
 
 const selection = {
   flight: null,
@@ -416,6 +416,21 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     sourcesEl.textContent = `Fontes: voos=${data.dataSources?.flights}, hotéis=${data.dataSources?.hotels}, carros=${data.dataSources?.cars}`;
     sourcesEl.classList.remove('hidden');
 
+    const actionsEl = document.getElementById('data-disclaimer');
+    if (actionsEl) {
+      actionsEl.innerHTML = renderSearchActions({
+        externalLinks: data.externalLinks,
+        hasResults: data.hasResults,
+      });
+      actionsEl.classList.remove('hidden');
+    }
+
+    const reqEl = document.getElementById('travel-requirements');
+    if (reqEl && data.travelRequirements) {
+      reqEl.innerHTML = renderTravelRequirementsPanel(data.travelRequirements);
+      reqEl.classList.remove('hidden');
+    }
+
     renderList('flights-list', data.flights, 'flight');
     renderList('hotels-list', data.hotels, 'hotel');
     renderList('cars-list', data.cars, 'car');
@@ -457,9 +472,10 @@ async function boot() {
   setupPwa();
   setupCheckoutUi();
 
-  if (travelApi.mode === 'local') {
+  if (travelApi.mode === 'local' || travelApi.mode === 'showcase') {
     const banner = document.getElementById('sources');
-    banner.textContent = 'Digite cidade ou aeroporto pelo nome — preços estimados por distância e região.';
+    banner.textContent =
+      'Vitrine Meta Travel — importe preços reais do Google Voos com a extensão ou configure config.json com sua API.';
     banner.classList.remove('hidden');
   }
 }
