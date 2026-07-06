@@ -173,7 +173,8 @@ export const localTravelApi = {
       allInclusive: rankByPrice(allInclusive),
       dataSources: { flights: 'estimate', hotels: 'estimate', cars: 'estimate', allInclusive: 'estimate' },
       mode: 'local',
-      note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados pela distância e região.`,
+      note: `Rota ${origin.city} → ${destination.city}. Preços estimados — não consultamos companhias aéreas em tempo real. Confira cada voo no site oficial.`,
+      dataDisclaimer: 'estimate',
     });
   },
 

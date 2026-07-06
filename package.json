@@ -1,6 +1,6 @@
 {
   "name": "meta-travel",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Meta Travel — planejador modular de viagens sem pacote fechado",
   "main": "src/index.js",
   "scripts": {

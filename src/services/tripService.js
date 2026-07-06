@@ -102,7 +102,12 @@ async function searchAllOptions(params) {
       }),
       allInclusive: 'estimate',
     },
-    note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Preços estimados com base na distância e região — configure .env para APIs reais.`,
+    note: `Rota ${origin.city} (${origin.airport}) → ${destination.city} (${destination.airport}). Modo demonstração: preços estimados. Configure Amadeus no .env para consulta real.`,
+    dataDisclaimer: resolveDataSource({
+      configured: amadeus.isConfigured(),
+      hasResults: flightSource === 'amadeus',
+      source: 'amadeus',
+    }) === 'estimate' ? 'estimate' : null,
   };
 }
 

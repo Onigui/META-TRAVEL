@@ -1,7 +1,7 @@
 import { initTravelApi } from './api.js';
 import { getSearchParamsFromForm } from './lib/searchFormHelpers.js';
 import { initPlaceAutocompletes } from './lib/placeAutocomplete.js';
-import { renderOptionCard, bindOptionCards } from './lib/cardRender.js';
+import { renderOptionCard, bindOptionCards, renderDataDisclaimer } from './lib/cardRender.js';
 
 const selection = {
   flight: null,
@@ -415,6 +415,16 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     const sourcesEl = document.getElementById('sources');
     sourcesEl.textContent = `Fontes: voos=${data.dataSources?.flights}, hotéis=${data.dataSources?.hotels}, carros=${data.dataSources?.cars}`;
     sourcesEl.classList.remove('hidden');
+
+    const disclaimerEl = document.getElementById('data-disclaimer');
+    if (disclaimerEl) {
+      const isEstimate =
+        data.dataDisclaimer === 'estimate' ||
+        data.dataSources?.flights === 'estimate' ||
+        data.mode === 'local';
+      disclaimerEl.innerHTML = isEstimate ? renderDataDisclaimer(data.dataSources) : '';
+      disclaimerEl.classList.toggle('hidden', !isEstimate);
+    }
 
     renderList('flights-list', data.flights, 'flight');
     renderList('hotels-list', data.hotels, 'hotel');

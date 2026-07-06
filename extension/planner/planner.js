@@ -1,7 +1,7 @@
 import { localTravelApi } from '../lib/travelEngine.js';
 import { getSearchParamsFromForm } from '../lib/searchFormHelpers.js';
 import { initPlaceAutocompletes } from '../lib/placeAutocomplete.js';
-import { renderOptionCard, bindOptionCards } from '../lib/cardRender.js';
+import { renderOptionCard, bindOptionCards, renderDataDisclaimer } from '../lib/cardRender.js';
 
 const travelApi = localTravelApi;
 
@@ -400,6 +400,13 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('summary').classList.add('hidden');
     document.getElementById('checkout-btn').classList.add('hidden');
+
+    const disclaimerEl = document.getElementById('data-disclaimer');
+    if (disclaimerEl) {
+      const isEstimate = data.dataDisclaimer === 'estimate' || data.mode === 'local';
+      disclaimerEl.innerHTML = isEstimate ? renderDataDisclaimer(data.dataSources) : '';
+      disclaimerEl.classList.toggle('hidden', !isEstimate);
+    }
 
     renderList('flights-list', data.flights, 'flight');
     renderList('hotels-list', data.hotels, 'hotel');

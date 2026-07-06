@@ -15,7 +15,7 @@ function copyLib(targetLib) {
   fs.mkdirSync(targetLib, { recursive: true });
   for (const file of [
     'travelEngine.js', 'places.js', 'places.json', 'mockPricing.js',
-    'searchFormHelpers.js', 'placeMeta.js', 'placeAutocomplete.js', 'cardRender.js',
+    'searchFormHelpers.js', 'placeMeta.js', 'placeAutocomplete.js', 'cardRender.js', 'flightDetails.js',
   ]) {
     fs.copyFileSync(path.join(sharedDir, file), path.join(targetLib, file));
   }
