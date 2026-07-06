@@ -1,3 +1,5 @@
+import { getAirportName, getRegion, getAliases } from './placeMeta.js';
+
 const PLACES = await fetch(new URL('./places.json', import.meta.url)).then((r) => r.json());
 
 const COUNTRY_ALIASES = {
@@ -28,7 +30,17 @@ function normalizeText(s) {
 }
 
 function enrichPlace(p) {
-  return { ...p, id: p.id || slugify(p.city, p.country), cityCode: p.cityCode || p.airport };
+  const airportName = p.airportName || getAirportName(p.airport, p.city);
+  const region = p.region ?? getRegion(p.city, p.country);
+  const aliases = p.aliases || getAliases(p.airport);
+  return {
+    ...p,
+    id: p.id || slugify(p.city, p.country),
+    cityCode: p.cityCode || p.airport,
+    airportName,
+    region,
+    aliases,
+  };
 }
 
 export function findByIata(code) {
@@ -42,6 +54,9 @@ function scorePlace(place, tokens) {
   const city = normalizeText(place.city);
   const country = normalizeText(place.country);
   const airport = place.airport.toLowerCase();
+  const airportName = normalizeText(place.airportName || '');
+  const region = normalizeText(place.region || '');
+  const aliasText = (place.aliases || []).map(normalizeText).join(' ');
   let score = 0;
   for (const t of tokens) {
     if (!t) continue;
@@ -51,7 +66,10 @@ function scorePlace(place, tokens) {
     if (country === t) score += 8;
     else if (country.startsWith(t)) score += 5;
     else if (country.includes(t)) score += 3;
-    if (airport === t) score += 12;
+    if (airport === t) score += 6;
+    if (airportName.includes(t)) score += 9;
+    if (region === t) score += 5;
+    if (aliasText.includes(t)) score += 11;
   }
   return score;
 }
@@ -144,7 +162,7 @@ export function resolveTripPlaces(params = {}) {
   });
 
   if (!destination) {
-    throw new Error('Informe o destino: cidade e país (ex: Paris, França ou CDG).');
+    throw new Error('Informe o destino: cidade ou nome do aeroporto (ex: Paris, Guarulhos).');
   }
   return { origin, destination };
 }
@@ -178,4 +196,4 @@ export function listPlaces() {
   return PLACES.map(enrichPlace);
 }
 
-export { PLACES };
+export { PLACES, enrichPlace };

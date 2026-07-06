@@ -24,14 +24,12 @@
       <section id="panel-plan" class="tab-panel">
         <form id="search-form" class="search-form">
           <label class="field-label">Origem (embarque)</label>
-          <input id="origin-city" type="text" list="places-list" value="São Paulo, Brasil" placeholder="Cidade" required autocomplete="off" data-city="São Paulo" data-country="Brasil" data-airport="GRU" />
-          <input id="origin-airport" type="text" value="GRU" placeholder="Aeroporto IATA" maxlength="3" />
+          <input id="origin-city" type="text" value="São Paulo, SP" placeholder="Ex: Guarulhos, Congonhas…" required autocomplete="off" data-city="São Paulo" data-country="Brasil" data-airport="GRU" />
+          <p class="field-note" id="origin-airport-note">Aeroporto Internacional de Guarulhos</p>
 
           <label class="field-label">Destino</label>
-          <input id="destination-city" type="text" list="places-list" placeholder="Ex: Paris, França" required autocomplete="off" />
-          <input id="destination-country" type="text" placeholder="País (opcional)" />
-          <input id="destination-airport" type="text" placeholder="Aeroporto IATA (opcional)" maxlength="3" />
-          <datalist id="places-list"></datalist>
+          <input id="destination-city" type="text" placeholder="Ex: Paris, Miami, Salvador…" required autocomplete="off" />
+          <p class="field-note hidden" id="destination-airport-note"></p>
 
           <div class="row-2">
             <input id="departure-date" type="date" title="Ida" />

@@ -1,5 +1,7 @@
 import { initTravelApi } from './api.js';
-import { setupPlaceDatalist, getSearchParamsFromForm } from './lib/searchFormHelpers.js';
+import { getSearchParamsFromForm } from './lib/searchFormHelpers.js';
+import { initPlaceAutocompletes } from './lib/placeAutocomplete.js';
+import { renderOptionCard, bindOptionCards } from './lib/cardRender.js';
 
 const selection = {
   flight: null,
@@ -44,31 +46,23 @@ function getSearchMeta() {
   };
 }
 
-function renderOptionCard(item, type) {
-  const selected = selection[type]?.id === item.id;
-  const partnerNote = item.partnerId
-    ? `<span class="partner-badge">Desconto de parceiro disponível</span>`
-    : '';
+function renderOptionCardLocal(item, type) {
+  return renderOptionCard(item, type, {
+    selected: selection[type]?.id === item.id,
+    formatCurrency,
+  });
+}
 
-  let details = '';
-  if (type === 'flight') {
-    details = `${item.details.airline} · ${item.details.stops === 0 ? 'Direto' : `${item.details.stops} escala(s)`} · ${item.details.duration}`;
-  } else if (type === 'hotel') {
-    details = `${item.details.zone} · ${item.details.nights} noites · ${item.details.stars ? `${item.details.stars}★` : 'Sem classificação'}`;
-  } else if (type === 'car') {
-    details = `${item.details.category} · ${item.details.days} dias`;
-  } else if (type === 'allInclusive') {
-    details = `${item.details.meals} · ${item.details.activities}`;
+function updateAirportNote(inputId, noteId, place) {
+  const note = document.getElementById(noteId);
+  if (!note) return;
+  if (place?.airportName) {
+    note.textContent = place.airportName;
+    note.classList.remove('hidden');
+  } else {
+    note.textContent = '';
+    note.classList.add('hidden');
   }
-
-  return `
-    <article class="option-card ${selected ? 'selected' : ''}" data-type="${type}" data-id="${item.id}">
-      <h4>${item.name}</h4>
-      <p>${details}</p>
-      <p class="price">${formatCurrency(item.basePrice)}</p>
-      ${partnerNote}
-    </article>
-  `;
 }
 
 function renderList(containerId, items, type) {
@@ -77,12 +71,10 @@ function renderList(containerId, items, type) {
     container.innerHTML = '<p>Nenhuma opção disponível para este destino.</p>';
     return;
   }
-  container.innerHTML = items.map((item) => renderOptionCard(item, type)).join('');
+  container.innerHTML = items.map((item) => renderOptionCardLocal(item, type)).join('');
 
-  container.querySelectorAll('.option-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      const id = card.dataset.id;
-      const item = items.find((i) => i.id === id);
+  bindOptionCards(container, items, type, {
+    onToggle: (item, id) => {
       if (selection[type]?.id === id) {
         selection[type] = null;
       } else {
@@ -92,7 +84,7 @@ function renderList(containerId, items, type) {
       document.getElementById('summary').classList.remove('hidden');
       document.getElementById('checkout-btn').classList.add('hidden');
       renderSelectionPreview();
-    });
+    },
   });
 }
 
@@ -297,18 +289,16 @@ async function openAllStepsInSequence() {
 }
 
 async function loadPlacesAutocomplete() {
-  const data = await travelApi.getDestinations();
-  const places = data.destinations || [];
-  setupPlaceDatalist(
-    document.getElementById('origin-city'),
-    document.getElementById('places-list'),
-    places
-  );
-  setupPlaceDatalist(
-    document.getElementById('destination-city'),
-    document.getElementById('places-list'),
-    places
-  );
+  const form = document.getElementById('search-form');
+  initPlaceAutocompletes(form, {
+    onSelect: (place, inputEl) => {
+      if (inputEl?.id === 'origin-city') {
+        updateAirportNote('origin-city', 'origin-airport-note', place);
+      } else if (inputEl?.id === 'destination-city') {
+        updateAirportNote('destination-city', 'destination-airport-note', place);
+      }
+    },
+  });
 }
 
 async function loadPartners() {
@@ -469,7 +459,7 @@ async function boot() {
 
   if (travelApi.mode === 'local') {
     const banner = document.getElementById('sources');
-    banner.textContent = 'Digite qualquer destino — preços estimados por distância e região.';
+    banner.textContent = 'Digite cidade ou aeroporto pelo nome — preços estimados por distância e região.';
     banner.classList.remove('hidden');
   }
 }
