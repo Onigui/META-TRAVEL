@@ -1,7 +1,7 @@
 import { initTravelApi } from './api.js';
 import { getSearchParamsFromForm } from './lib/searchFormHelpers.js';
 import { initPlaceAutocompletes } from './lib/placeAutocomplete.js';
-import { renderOptionCard, bindOptionCards, renderDataDisclaimer } from './lib/cardRender.js';
+import { renderOptionCard, bindOptionCards, renderTravelRequirementsPanel, renderSearchActions } from './lib/cardRender.js';
 
 const selection = {
   flight: null,
@@ -416,14 +416,19 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     sourcesEl.textContent = `Fontes: voos=${data.dataSources?.flights}, hotéis=${data.dataSources?.hotels}, carros=${data.dataSources?.cars}`;
     sourcesEl.classList.remove('hidden');
 
-    const disclaimerEl = document.getElementById('data-disclaimer');
-    if (disclaimerEl) {
-      const isEstimate =
-        data.dataDisclaimer === 'estimate' ||
-        data.dataSources?.flights === 'estimate' ||
-        data.mode === 'local';
-      disclaimerEl.innerHTML = isEstimate ? renderDataDisclaimer(data.dataSources) : '';
-      disclaimerEl.classList.toggle('hidden', !isEstimate);
+    const actionsEl = document.getElementById('data-disclaimer');
+    if (actionsEl) {
+      actionsEl.innerHTML = renderSearchActions({
+        externalLinks: data.externalLinks,
+        hasResults: data.hasResults,
+      });
+      actionsEl.classList.remove('hidden');
+    }
+
+    const reqEl = document.getElementById('travel-requirements');
+    if (reqEl && data.travelRequirements) {
+      reqEl.innerHTML = renderTravelRequirementsPanel(data.travelRequirements);
+      reqEl.classList.remove('hidden');
     }
 
     renderList('flights-list', data.flights, 'flight');
@@ -467,9 +472,10 @@ async function boot() {
   setupPwa();
   setupCheckoutUi();
 
-  if (travelApi.mode === 'local') {
+  if (travelApi.mode === 'local' || travelApi.mode === 'showcase') {
     const banner = document.getElementById('sources');
-    banner.textContent = 'Digite cidade ou aeroporto pelo nome — preços estimados por distância e região.';
+    banner.textContent =
+      'Vitrine Meta Travel — importe preços reais do Google Voos com a extensão ou configure config.json com sua API.';
     banner.classList.remove('hidden');
   }
 }

@@ -194,6 +194,30 @@ export function generateHotels({ destination, nights = 5, guests = 2, checkIn })
   });
 }
 
+const CAR_VISUALS = [
+  {
+    images: [
+      'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', 'Direção hidráulica', '5 portas', '2 malas'],
+  },
+  {
+    images: [
+      'https://images.unsplash.com/photo-1623869675781-12e04ca76d1e?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1494976388531-d1058498ceb8?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', 'Automático', '4 portas', '3 malas', 'Bluetooth'],
+  },
+  {
+    images: [
+      'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1533473356711-8565e4478abe?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', '7 lugares', 'SUV', '4 malas', 'GPS'],
+  },
+];
+
 export function generateCars({ destination, days = 5, pickUpDate, dropOffDate }) {
   const idx = destination.priceIndex || 1;
   const types = [
@@ -204,6 +228,7 @@ export function generateCars({ destination, days = 5, pickUpDate, dropOffDate })
 
   return types.map((t, i) => {
     const perDay = jitter(180 * idx * t.mult, 0.1);
+    const visual = CAR_VISUALS[i] || CAR_VISUALS[0];
     return {
       id: `car-${destination.id}-${i}`,
       type: 'car',
@@ -218,6 +243,9 @@ export function generateCars({ destination, days = 5, pickUpDate, dropOffDate })
         pickUpDate,
         dropOffDate,
         location: destination.airport !== 'XXX' ? destination.airport : destination.city,
+        image: visual.images[0],
+        images: visual.images,
+        amenities: visual.amenities,
       },
       bookingUrl: `https://www.rentalcars.com/SearchResults.do?affiliateCode=meta-travel&pickupLocation=${encodeURIComponent(destination.city)}`,
       source: 'estimate',

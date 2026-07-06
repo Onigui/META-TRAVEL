@@ -25,11 +25,14 @@ module.exports = {
       }
     }
 
-    return generateCars({
-      destination: dest,
-      days,
-      pickUpDate: pickUp,
-      dropOffDate: dropOff,
-    });
+    if (process.env.DEMO_MODE === '1') {
+      return generateCars({
+        destination: dest,
+        days,
+        pickUpDate: pickUp,
+        dropOffDate: dropOff,
+      });
+    }
+    return [];
   },
 };

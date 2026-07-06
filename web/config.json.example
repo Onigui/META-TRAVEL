@@ -1,0 +1,4 @@
+{
+  "apiBase": "https://sua-api-meta-travel.example.com/api",
+  "_comment": "Copie para config.json e aponte para seu servidor Node com Amadeus/Booking configurados"
+}

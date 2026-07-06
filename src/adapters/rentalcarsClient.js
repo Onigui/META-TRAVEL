@@ -67,11 +67,44 @@ function normalizeProvider(supplierName = '') {
   return lower.replace(/\s+/g, '-').slice(0, 20) || 'rental';
 }
 
+function carVisualsForCategory(category = '') {
+  const c = category.toLowerCase();
+  if (c.includes('suv') || c.includes('van')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=640&h=400&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=640&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1533473356711-8565e4478abe?w=320&h=200&fit=crop',
+      ],
+      amenities: ['Ar-condicionado', 'SUV', '4+ malas'],
+    };
+  }
+  if (c.includes('inter') || c.includes('compact') || c.includes('méd')) {
+    return {
+      image: 'https://images.unsplash.com/photo-1623869675781-12e04ca76d1e?w=640&h=400&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1623869675781-12e04ca76d1e?w=640&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1494976388531-d1058498ceb8?w=320&h=200&fit=crop',
+      ],
+      amenities: ['Ar-condicionado', 'Automático', '3 malas'],
+    };
+  }
+  return {
+    image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=640&h=400&fit=crop',
+    images: [
+      'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=640&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=320&h=200&fit=crop',
+    ],
+    amenities: ['Ar-condicionado', 'Econômico', '2 malas'],
+  };
+}
+
 function mapCar(item, { days, pickUpDate, dropOffDate, airport, city }) {
   const pricePerDay = Number.parseFloat(item.price?.amount || item.daily_rate || item.price || 0);
   const provider = normalizeProvider(item.supplier?.name || item.company || item.vendor || '');
   const category = item.vehicle?.category || item.car_class || item.category || 'Padrão';
   const name = item.vehicle?.name || item.name || `${provider} · ${category}`;
+  const visual = carVisualsForCategory(category);
 
   return {
     id: `rentalcars-${item.id || `${provider}-${category}`.replace(/\s+/g, '-')}`,
@@ -89,6 +122,9 @@ function mapCar(item, { days, pickUpDate, dropOffDate, airport, city }) {
       location: airport || city,
       transmission: item.vehicle?.transmission || null,
       seats: item.vehicle?.seats || null,
+      image: item.vehicle?.image_url || visual.image,
+      images: item.vehicle?.image_url ? [item.vehicle.image_url, ...visual.images.slice(1)] : visual.images,
+      amenities: visual.amenities,
     },
     bookingUrl: item.url || buildDeepLink({ airport, city, pickUpDate, dropOffDate }),
     source: 'rentalcars',

@@ -297,6 +297,20 @@ button { cursor: pointer; }
 
 .data-disclaimer p { margin: 4px 0 0; color: var(--muted); }
 
+.travel-requirements { margin-bottom: 10px; font-size: 0.75rem; }
+.travel-requirements h2 { font-size: 0.9rem; margin: 0 0 6px; }
+.req-sources a { color: var(--accent-2); }
+.action-links { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.action-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  color: var(--accent-2);
+  text-decoration: none;
+  font-size: 0.72rem;
+}
+
 .summary h2 { margin: 0 0 8px; font-size: 0.95rem; }
 .actions { display: grid; gap: 8px; margin-top: 10px; }
 

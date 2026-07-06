@@ -335,8 +335,33 @@ button:hover { filter: brightness(1.08); }
 }
 
 .data-disclaimer p { margin: 0.35rem 0 0; font-size: 0.88rem; color: var(--muted); }
-.data-disclaimer strong { color: var(--warning); }
-.disclaimer-hint { font-size: 0.8rem !important; }
+
+.travel-requirements { margin-bottom: 1.25rem; }
+.travel-requirements h2 { margin-top: 0; font-size: 1.1rem; }
+.req-summary { color: var(--muted); }
+.req-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+.req-sources { font-size: 0.85rem; color: var(--muted); }
+.req-sources a { color: var(--accent-2); }
+
+.search-actions h2 { margin-top: 0; font-size: 1.05rem; }
+.action-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.action-btn {
+  display: inline-block;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  color: var(--accent-2);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.action-btn:hover { border-color: var(--accent); }
 
 .summary .metrics {
   display: grid;

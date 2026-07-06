@@ -6,6 +6,8 @@ const SITE_PATTERNS = [
   { id: 'decolar', pattern: /decolar\.com/i, name: 'Decolar', category: 'package' },
   { id: 'skyscanner', pattern: /skyscanner\.com/i, name: 'Skyscanner', category: 'flight' },
   { id: 'google-travel', pattern: /google\.com\/travel/i, name: 'Google Travel', category: 'flight' },
+  { id: 'rentalcars', pattern: /rentalcars\.com/i, name: 'Rentalcars', category: 'car' },
+  { id: 'localiza', pattern: /localiza\.com/i, name: 'Localiza', category: 'car' },
 ];
 
 const EXTRACTORS = {
@@ -37,6 +39,14 @@ const EXTRACTORS = {
     title: ['h1', '[class*="route"]', '[role="heading"]'],
     price: ['[class*="price"]', '[data-amount]', '[class*="Amount"]'],
   },
+  rentalcars: {
+    title: ['h1', '[class*="vehicle"]', '.car-name'],
+    price: ['[class*="price"]', '.total-price'],
+  },
+  localiza: {
+    title: ['h1', '[class*="vehicle"]'],
+    price: ['[class*="price"]', '.valor'],
+  },
 };
 
 function detectSite(url = window.location.href) {
@@ -61,6 +71,43 @@ function parsePrice(raw) {
   return Number.isFinite(value) ? value : 0;
 }
 
+function extractGoogleTravelOffers() {
+  const offers = [];
+  const seen = new Set();
+  const priceNodes = document.querySelectorAll('[aria-label*="R$"], [aria-label*="BRL"], [class*="price"], [data-gs]');
+
+  for (const node of priceNodes) {
+    const label = node.getAttribute?.('aria-label') || node.textContent || '';
+    const price = parsePrice(label);
+    if (price < 80 || price > 500000) continue;
+
+    const card = node.closest('[role="listitem"], [data-id], li, div[class*="result"]') || node.parentElement;
+    const cardText = card?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 200) || label;
+    const key = `${price}-${cardText.slice(0, 40)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const stopsMatch = cardText.match(/(\d+)\s+parada|(\d+)\s+escala|direto|nonstop/i);
+    let stops = 0;
+    if (/direto|nonstop/i.test(cardText)) stops = 0;
+    else if (stopsMatch) stops = Number(stopsMatch[1] || stopsMatch[2] || 1);
+
+    const durationMatch = cardText.match(/(\d+)\s*h\s*(\d+)?\s*m?/i);
+
+    offers.push({
+      title: cardText.slice(0, 120),
+      price,
+      stops,
+      duration: durationMatch ? `${durationMatch[1]}h${durationMatch[2] || '00'}` : '',
+      airline: 'Google Travel',
+      url: window.location.href,
+    });
+    if (offers.length >= 12) break;
+  }
+
+  return offers;
+}
+
 function extractTravelData() {
   const site = detectSite();
   if (!site) return null;
@@ -72,7 +119,7 @@ function extractTravelData() {
   const priceRaw = queryText(selectors.price);
   const price = parsePrice(priceRaw);
 
-  return {
+  const data = {
     site: site.id,
     siteName: site.name,
     category: site.category,
@@ -80,7 +127,35 @@ function extractTravelData() {
     price,
     priceRaw,
     url: window.location.href,
+    metadata: {},
   };
+
+  if (site.id === 'google-travel') {
+    const offers = extractGoogleTravelOffers();
+    if (offers.length) {
+      data.metadata.offers = offers;
+      data.price = offers[0].price;
+      data.title = offers[0].title || title;
+    }
+  }
+
+  if (site.id === 'booking') {
+    const img = document.querySelector('img[src*="bstatic"], .hotel_image, [data-testid="gallery"] img');
+    if (img?.src) {
+      data.metadata.image = img.src;
+      data.metadata.images = [img.src];
+    }
+  }
+
+  if (site.id === 'rentalcars' || site.id === 'localiza') {
+    const img = document.querySelector('img[src*="car"], img[alt*="car"], .vehicle-image img');
+    if (img?.src) {
+      data.metadata.image = img.src;
+      data.metadata.images = [img.src];
+    }
+  }
+
+  return data;
 }
 
 function formatCurrency(value) {
@@ -88,6 +163,18 @@ function formatCurrency(value) {
     style: 'currency',
     currency: 'BRL',
   }).format(value || 0);
+}
+
+function saveCapture(data) {
+  chrome.runtime.sendMessage({ type: 'SAVE_CAPTURE', payload: data }, (response) => {
+    const btn = document.querySelector('#meta-travel-widget .mt-save');
+    if (btn && response?.ok) {
+      btn.textContent = data.metadata?.offers?.length
+        ? `Salvo ✓ (${data.metadata.offers.length} opções)`
+        : 'Salvo ✓';
+      setTimeout(() => { btn.textContent = 'Salvar no planejador'; }, 2500);
+    }
+  });
 }
 
 function renderWidget(data) {
@@ -98,6 +185,8 @@ function renderWidget(data) {
     document.body.appendChild(widget);
   }
 
+  const offerCount = data.metadata?.offers?.length || 0;
+
   widget.innerHTML = `
     <div class="mt-header">
       <strong>Meta Travel</strong>
@@ -106,23 +195,14 @@ function renderWidget(data) {
     <p class="mt-site">${data.siteName} · ${data.category}</p>
     <p class="mt-title">${data.title.slice(0, 80)}</p>
     <div class="mt-row mt-highlight"><span>Preço detectado</span><strong>${formatCurrency(data.price)}</strong></div>
+    ${offerCount > 1 ? `<p class="mt-meta">${offerCount} opções encontradas nesta página</p>` : ''}
     <button type="button" class="mt-save">Salvar no planejador</button>
     <button type="button" class="mt-open">Abrir planejador</button>
   `;
 
   widget.querySelector('.mt-close')?.addEventListener('click', () => widget.remove());
 
-  widget.querySelector('.mt-save')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: 'SAVE_CAPTURE', payload: data }, (response) => {
-      const btn = widget.querySelector('.mt-save');
-      if (response?.ok) {
-        btn.textContent = 'Salvo ✓';
-        setTimeout(() => { btn.textContent = 'Salvar no planejador'; }, 2000);
-      } else {
-        btn.textContent = 'Erro ao salvar';
-      }
-    });
-  });
+  widget.querySelector('.mt-save')?.addEventListener('click', () => saveCapture(data));
 
   widget.querySelector('.mt-open')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'OPEN_PLANNER' });

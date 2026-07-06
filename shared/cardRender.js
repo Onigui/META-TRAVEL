@@ -42,11 +42,11 @@ function renderMedia(item, type) {
 }
 
 function renderSourceBadge(item) {
-  if (item.source === 'amadeus') {
-    return '<span class="source-badge source-badge--verified">Preço verificado (API)</span>';
+  if (item.source === 'capture') {
+    return '<span class="source-badge source-badge--verified">Preço real capturado</span>';
   }
-  if (item.source === 'estimate' || item.isEstimate) {
-    return '<span class="source-badge source-badge--estimate">Estimativa — confirme na companhia</span>';
+  if (item.source === 'amadeus' || item.source === 'booking' || item.source === 'rentalcars') {
+    return '<span class="source-badge source-badge--verified">Preço verificado (API)</span>';
   }
   return '';
 }
@@ -174,19 +174,17 @@ function buildDetails(item, type) {
 }
 
 export function renderOptionCard(item, type, { selected = false, formatCurrency }) {
-  const isEstimate = item.source === 'estimate' || item.isEstimate;
-  const partnerNote =
-    item.partnerId && !isEstimate
-      ? '<span class="partner-badge">Desconto de parceiro disponível</span>'
-      : item.partnerId && isEstimate
-        ? '<span class="partner-badge partner-badge--muted">Desconto de parceiro no checkout (sobre valor final)</span>'
-        : '';
-  const visual = type === 'hotel' || type === 'allInclusive';
+  const partnerNote = item.partnerId
+    ? '<span class="partner-badge">Desconto de parceiro disponível</span>'
+    : '';
+  const visual = type === 'hotel' || type === 'allInclusive' || type === 'car';
   const details = buildDetails(item, type);
   const amenities =
-    type === 'hotel' || type === 'allInclusive' ? renderAmenities(item.details?.amenities) : '';
+    type === 'hotel' || type === 'allInclusive' || type === 'car'
+      ? renderAmenities(item.details?.amenities)
+      : '';
   const flightExtras = type === 'flight' ? renderFlightExtras(item) : '';
-  const sourceBadge = type === 'flight' ? renderSourceBadge(item) : '';
+  const sourceBadge = type === 'flight' || type === 'car' ? renderSourceBadge(item) : renderSourceBadge(item);
 
   return `
     <article class="option-card ${visual ? 'option-card--visual' : ''} ${type === 'flight' ? 'option-card--flight' : ''} ${selected ? 'selected' : ''}" data-type="${type}" data-id="${escapeHtml(item.id)}">
@@ -204,6 +202,63 @@ export function renderOptionCard(item, type, { selected = false, formatCurrency 
   `;
 }
 
+export function renderTravelRequirementsPanel(req) {
+  if (!req) return '';
+  const docs = (req.documents || []).map((d) => `<li>${escapeHtml(d)}</li>`).join('');
+  const steps = (req.steps || []).map((s) => `<li>${escapeHtml(s)}</li>`).join('');
+  const sources = (req.sources || [])
+    .map((s) => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noreferrer">${escapeHtml(s.title)}</a>`)
+    .join(' · ');
+
+  const visaLabel = {
+    none: 'Sem visto',
+    none_short_stay: 'Sem visto (estadia curta)',
+    required: 'Visto necessário',
+    eta: 'Autorização eletrônica (ETA)',
+    on_arrival: 'Visto na chegada',
+    check_official: 'Consulte fonte oficial',
+  }[req.visa] || req.visaType || '';
+
+  return `
+    <section class="travel-requirements panel">
+      <h2>Documentos e visto — ${escapeHtml(req.country)}</h2>
+      <p class="req-summary">${escapeHtml(req.summary || '')}</p>
+      <div class="req-grid">
+        <div>
+          <strong>Documentos</strong>
+          <ul>${docs}</ul>
+        </div>
+        <div>
+          <strong>Imigração</strong>
+          <p>${escapeHtml(visaLabel)}</p>
+          ${req.passportRequired ? '<p>Passaporte obrigatório</p>' : '<p>Passaporte pode não ser obrigatório (verifique)</p>'}
+        </div>
+      </div>
+      ${steps ? `<div><strong>Passo a passo</strong><ol>${steps}</ol></div>` : ''}
+      <p class="req-sources"><strong>Fontes oficiais:</strong> ${sources}</p>
+    </section>
+  `;
+}
+
+export function renderSearchActions({ externalLinks, hasResults }) {
+  if (!externalLinks) return '';
+  return `
+    <section class="search-actions panel">
+      <h2>Buscar preços reais</h2>
+      ${
+        hasResults
+          ? '<p>Resultados abaixo vêm de APIs ou capturas salvas. Você também pode abrir:</p>'
+          : '<p>Nenhum preço importado ainda. Abra o Google Voos (ou configure a API) e use a extensão para salvar:</p>'
+      }
+      <div class="action-links">
+        <a class="action-btn" href="${escapeHtml(externalLinks.googleFlights)}" target="_blank" rel="noreferrer">Google Voos</a>
+        <a class="action-btn" href="${escapeHtml(externalLinks.googleHotels)}" target="_blank" rel="noreferrer">Google Hotéis</a>
+        <a class="action-btn" href="${escapeHtml(externalLinks.rentalcars)}" target="_blank" rel="noreferrer">Aluguel de carros</a>
+      </div>
+    </section>
+  `;
+}
+
 export function bindOptionCards(container, items, type, { onToggle }) {
   container.querySelectorAll('.option-card').forEach((card) => {
     card.addEventListener('click', (e) => {
@@ -215,21 +270,6 @@ export function bindOptionCards(container, items, type, { onToggle }) {
   });
 }
 
-export function renderDataDisclaimer(dataSources) {
-  const flightsEstimate = dataSources?.flights === 'estimate' || dataSources?.flights === 'estimate-local';
-  if (!flightsEstimate) return '';
-  return `
-    <div class="data-disclaimer" role="note">
-      <strong>⚠ Preços de referência, não em tempo real</strong>
-      <p>
-        O site e a extensão funcionam em <strong>modo demonstração</strong>: não há login nas companhias aéreas
-        (GOL, LATAM, Azul etc.) e os valores são <strong>estimados</strong> pela distância da rota.
-        A disponibilidade real pode ser diferente — sempre confira no site oficial antes de comprar.
-      </p>
-      <p class="disclaimer-hint">
-        Para preços verificados, configure as credenciais <code>AMADEUS_CLIENT_ID</code> e
-        <code>AMADEUS_CLIENT_SECRET</code> no servidor da API.
-      </p>
-    </div>
-  `;
+export function renderDataDisclaimer() {
+  return '';
 }

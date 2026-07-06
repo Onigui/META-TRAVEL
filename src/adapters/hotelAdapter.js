@@ -53,11 +53,14 @@ module.exports = {
 
     if (results.length) return dedupeHotels(results);
 
-    return generateHotels({
-      destination: dest,
-      nights,
-      guests,
-      checkIn: checkInDate,
-    });
+    if (process.env.DEMO_MODE === '1') {
+      return generateHotels({
+        destination: dest,
+        nights,
+        guests,
+        checkIn: checkInDate,
+      });
+    }
+    return [];
   },
 };

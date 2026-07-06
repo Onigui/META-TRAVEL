@@ -1,9 +1,9 @@
-import { localTravelApi } from '../lib/travelEngine.js';
+import { createTravelApi } from '../lib/travelEngine.js';
 import { getSearchParamsFromForm } from '../lib/searchFormHelpers.js';
 import { initPlaceAutocompletes } from '../lib/placeAutocomplete.js';
-import { renderOptionCard, bindOptionCards, renderDataDisclaimer } from '../lib/cardRender.js';
+import { renderOptionCard, bindOptionCards, renderTravelRequirementsPanel, renderSearchActions } from '../lib/cardRender.js';
 
-const travelApi = localTravelApi;
+let travelApi;
 
 const selection = {
   flight: null,
@@ -403,9 +403,17 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
 
     const disclaimerEl = document.getElementById('data-disclaimer');
     if (disclaimerEl) {
-      const isEstimate = data.dataDisclaimer === 'estimate' || data.mode === 'local';
-      disclaimerEl.innerHTML = isEstimate ? renderDataDisclaimer(data.dataSources) : '';
-      disclaimerEl.classList.toggle('hidden', !isEstimate);
+      disclaimerEl.innerHTML = renderSearchActions({
+        externalLinks: data.externalLinks,
+        hasResults: data.hasResults,
+      });
+      disclaimerEl.classList.remove('hidden');
+    }
+
+    const reqEl = document.getElementById('travel-requirements');
+    if (reqEl && data.travelRequirements) {
+      reqEl.innerHTML = renderTravelRequirementsPanel(data.travelRequirements);
+      reqEl.classList.remove('hidden');
     }
 
     renderList('flights-list', data.flights, 'flight');
@@ -458,7 +466,23 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'FOCUS_CAPTURES') switchTab('captures');
 });
 
+async function initApi() {
+  const { apiUrl, useRemoteSearch } = await chrome.storage.sync.get({
+    apiUrl: '',
+    useRemoteSearch: false,
+  });
+  travelApi = createTravelApi({
+    mode: 'extension',
+    remoteApiBase: useRemoteSearch && apiUrl ? apiUrl.replace(/\/$/, '') : null,
+    getCaptures: async () => {
+      const { captures = [] } = await chrome.storage.local.get({ captures: [] });
+      return captures;
+    },
+  });
+}
+
 async function boot() {
+  await initApi();
   setupTabs();
   setupCheckoutUi();
   setDefaultDepartureDate();
