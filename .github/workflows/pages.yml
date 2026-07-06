@@ -11,15 +11,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,26 +36,47 @@ jobs:
             exit 1
           fi
 
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Build site
         run: node scripts/build-pages.js
 
       - name: Validar artefato
         run: |
           test -f dist/pages/index.html || (echo "index.html ausente" && exit 1)
+          test -f dist/pages/lib/placeAutocomplete.js || (echo "lib ausente" && exit 1)
           ls -la dist/pages/
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/pages
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: chrome-extension
           path: dist/meta-travel-extension-*.zip
           retention-days: 14
           if-no-files-found: ignore
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Não cancela deploy em andamento — evita "Deployment failed, try again later"
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verificar URL publicada
+        if: steps.deployment.outputs.page_url != ''
+        run: |
+          echo "Site publicado em: ${{ steps.deployment.outputs.page_url }}"
+          echo "## Deploy concluído" >> $GITHUB_STEP_SUMMARY
+          echo "URL: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
