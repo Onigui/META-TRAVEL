@@ -36,8 +36,8 @@ const EXTRACTORS = {
     price: ['[class*="price"]', '[data-testid="price"]'],
   },
   'google-travel': {
-    title: ['h1', '[class*="route"]', '[role="heading"]'],
-    price: ['[class*="price"]', '[data-amount]', '[class*="Amount"]'],
+    title: ['h1', '[role="heading"]'],
+    price: [],
   },
   rentalcars: {
     title: ['h1', '[class*="vehicle"]', '.car-name'],
@@ -49,14 +49,29 @@ const EXTRACTORS = {
   },
 };
 
+const SCAN_DEBOUNCE_MS = 2500;
+const GOOGLE_POLL_MS = 5000;
+const IS_GOOGLE_TRAVEL = /google\.com\/travel/i.test(window.location.href);
+
+let scanScheduled = false;
+let scanInProgress = false;
+let lastFingerprint = '';
+let currentData = null;
+let pollIntervalId = null;
+let mutationObserver = null;
+
 function detectSite(url = window.location.href) {
   return SITE_PATTERNS.find((s) => s.pattern.test(url)) || null;
 }
 
 function queryText(selectors) {
   for (const selector of selectors) {
-    const el = document.querySelector(selector);
-    if (el?.textContent?.trim()) return el.textContent.trim();
+    try {
+      const el = document.querySelector(selector);
+      if (el?.textContent?.trim()) return el.textContent.trim();
+    } catch {
+      /* seletor inválido em alguns browsers */
+    }
   }
   return '';
 }
@@ -71,28 +86,34 @@ function parsePrice(raw) {
   return Number.isFinite(value) ? value : 0;
 }
 
+/** Google Voos: só aria-label com preço — evita querySelectorAll('[class*="price"]') que trava a página */
 function extractGoogleTravelOffers() {
   const offers = [];
   const seen = new Set();
-  const priceNodes = document.querySelectorAll('[aria-label*="R$"], [aria-label*="BRL"], [class*="price"], [data-gs]');
+  const priceNodes = document.querySelectorAll('[aria-label*="R$"], [aria-label*="reais"]');
 
-  for (const node of priceNodes) {
-    const label = node.getAttribute?.('aria-label') || node.textContent || '';
+  const maxNodes = Math.min(priceNodes.length, 24);
+  for (let i = 0; i < maxNodes; i++) {
+    const node = priceNodes[i];
+    const label = node.getAttribute('aria-label') || '';
     const price = parsePrice(label);
     if (price < 80 || price > 500000) continue;
 
-    const card = node.closest('[role="listitem"], [data-id], li, div[class*="result"]') || node.parentElement;
-    const cardText = card?.textContent?.replace(/\s+/g, ' ').trim().slice(0, 200) || label;
-    const key = `${price}-${cardText.slice(0, 40)}`;
+    const card = node.closest('[role="listitem"], [role="option"], li') || node.parentElement?.parentElement;
+    const cardText = (card?.getAttribute?.('aria-label') || card?.textContent || label)
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 200);
+    const key = `${price}-${cardText.slice(0, 36)}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const stopsMatch = cardText.match(/(\d+)\s+parada|(\d+)\s+escala|direto|nonstop/i);
+    const stopsMatch = cardText.match(/(\d+)\s+parada|(\d+)\s+escala|direto|nonstop|sem escala/i);
     let stops = 0;
-    if (/direto|nonstop/i.test(cardText)) stops = 0;
+    if (/direto|nonstop|sem escala/i.test(cardText)) stops = 0;
     else if (stopsMatch) stops = Number(stopsMatch[1] || stopsMatch[2] || 1);
 
-    const durationMatch = cardText.match(/(\d+)\s*h\s*(\d+)?\s*m?/i);
+    const durationMatch = cardText.match(/(\d+)\s*h\s*(\d+)?/i);
 
     offers.push({
       title: cardText.slice(0, 120),
@@ -116,8 +137,27 @@ function extractTravelData() {
   if (!selectors) return null;
 
   const title = queryText(selectors.title) || document.title;
-  const priceRaw = queryText(selectors.price);
-  const price = parsePrice(priceRaw);
+  let price = 0;
+  let priceRaw = '';
+
+  if (site.id === 'google-travel') {
+    const offers = extractGoogleTravelOffers();
+    if (!offers.length) return null;
+    return {
+      site: site.id,
+      siteName: site.name,
+      category: site.category,
+      title: offers[0].title || title,
+      price: offers[0].price,
+      priceRaw: String(offers[0].price),
+      url: window.location.href,
+      metadata: { offers },
+    };
+  }
+
+  priceRaw = queryText(selectors.price);
+  price = parsePrice(priceRaw);
+  if (!price) return null;
 
   const data = {
     site: site.id,
@@ -129,15 +169,6 @@ function extractTravelData() {
     url: window.location.href,
     metadata: {},
   };
-
-  if (site.id === 'google-travel') {
-    const offers = extractGoogleTravelOffers();
-    if (offers.length) {
-      data.metadata.offers = offers;
-      data.price = offers[0].price;
-      data.title = offers[0].title || title;
-    }
-  }
 
   if (site.id === 'booking') {
     const img = document.querySelector('img[src*="bstatic"], .hotel_image, [data-testid="gallery"] img');
@@ -158,6 +189,14 @@ function extractTravelData() {
   return data;
 }
 
+function fingerprint(data) {
+  if (!data) return '';
+  const offerKey = (data.metadata?.offers || [])
+    .map((o) => `${o.price}:${o.title?.slice(0, 20)}`)
+    .join('|');
+  return `${data.site}:${data.price}:${data.title?.slice(0, 50)}:${offerKey}`;
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -165,54 +204,104 @@ function formatCurrency(value) {
   }).format(value || 0);
 }
 
-function saveCapture(data) {
-  chrome.runtime.sendMessage({ type: 'SAVE_CAPTURE', payload: data }, (response) => {
-    const btn = document.querySelector('#meta-travel-widget .mt-save');
-    if (btn && response?.ok) {
-      btn.textContent = data.metadata?.offers?.length
-        ? `Salvo ✓ (${data.metadata.offers.length} opções)`
-        : 'Salvo ✓';
-      setTimeout(() => { btn.textContent = 'Salvar no planejador'; }, 2500);
-    }
-  });
-}
-
-function renderWidget(data) {
+function ensureWidget() {
   let widget = document.getElementById('meta-travel-widget');
-  if (!widget) {
-    widget = document.createElement('div');
-    widget.id = 'meta-travel-widget';
-    document.body.appendChild(widget);
-  }
+  if (widget) return widget;
 
-  const offerCount = data.metadata?.offers?.length || 0;
-
+  widget = document.createElement('div');
+  widget.id = 'meta-travel-widget';
   widget.innerHTML = `
     <div class="mt-header">
       <strong>Meta Travel</strong>
       <button type="button" class="mt-close" aria-label="Fechar">×</button>
     </div>
-    <p class="mt-site">${data.siteName} · ${data.category}</p>
-    <p class="mt-title">${data.title.slice(0, 80)}</p>
-    <div class="mt-row mt-highlight"><span>Preço detectado</span><strong>${formatCurrency(data.price)}</strong></div>
-    ${offerCount > 1 ? `<p class="mt-meta">${offerCount} opções encontradas nesta página</p>` : ''}
+    <p class="mt-site"></p>
+    <p class="mt-title"></p>
+    <div class="mt-row mt-highlight"><span>Preço detectado</span><strong class="mt-price"></strong></div>
+    <p class="mt-meta hidden"></p>
     <button type="button" class="mt-save">Salvar no planejador</button>
     <button type="button" class="mt-open">Abrir planejador</button>
   `;
 
   widget.querySelector('.mt-close')?.addEventListener('click', () => widget.remove());
 
-  widget.querySelector('.mt-save')?.addEventListener('click', () => saveCapture(data));
+  widget.querySelector('.mt-save')?.addEventListener('click', () => {
+    if (!currentData) return;
+    chrome.runtime.sendMessage({ type: 'SAVE_CAPTURE', payload: currentData }, (response) => {
+      const btn = widget.querySelector('.mt-save');
+      if (btn && response?.ok) {
+        const n = currentData.metadata?.offers?.length || 0;
+        btn.textContent = n > 1 ? `Salvo ✓ (${n} opções)` : 'Salvo ✓';
+        setTimeout(() => { btn.textContent = 'Salvar no planejador'; }, 2500);
+      }
+    });
+  });
 
   widget.querySelector('.mt-open')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'OPEN_PLANNER' });
   });
+
+  document.body.appendChild(widget);
+  return widget;
 }
 
-async function analyzePage() {
-  const data = extractTravelData();
-  if (!data || !data.price) return;
-  renderWidget(data);
+function updateWidget(data) {
+  const widget = ensureWidget();
+  const offerCount = data.metadata?.offers?.length || 0;
+
+  widget.querySelector('.mt-site').textContent = `${data.siteName} · ${data.category}`;
+  widget.querySelector('.mt-title').textContent = (data.title || '').slice(0, 80);
+  widget.querySelector('.mt-price').textContent = formatCurrency(data.price);
+
+  const meta = widget.querySelector('.mt-meta');
+  if (offerCount > 1) {
+    meta.textContent = `${offerCount} opções encontradas nesta página`;
+    meta.classList.remove('hidden');
+  } else {
+    meta.textContent = '';
+    meta.classList.add('hidden');
+  }
+}
+
+function runScan() {
+  if (scanInProgress) return;
+  scanInProgress = true;
+
+  try {
+    const data = extractTravelData();
+    if (!data?.price) return;
+
+    const fp = fingerprint(data);
+    if (fp === lastFingerprint) return;
+
+    lastFingerprint = fp;
+    currentData = data;
+    updateWidget(data);
+  } finally {
+    scanInProgress = false;
+  }
+}
+
+function scheduleScan() {
+  if (scanScheduled) return;
+  scanScheduled = true;
+  setTimeout(() => {
+    scanScheduled = false;
+    runScan();
+  }, SCAN_DEBOUNCE_MS);
+}
+
+function startWatching() {
+  if (IS_GOOGLE_TRAVEL) {
+    // Google Voos muta o DOM o tempo todo — polling leve em vez de MutationObserver
+    setTimeout(runScan, 1500);
+    pollIntervalId = setInterval(runScan, GOOGLE_POLL_MS);
+    return;
+  }
+
+  mutationObserver = new MutationObserver(scheduleScan);
+  mutationObserver.observe(document.body, { childList: true, subtree: true });
+  setTimeout(runScan, 800);
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -221,7 +310,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
   if (message.type === 'REFRESH_CAPTURE') {
-    analyzePage();
+    runScan();
     sendResponse({ ok: true });
     return true;
   }
@@ -229,14 +318,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', analyzePage);
+  document.addEventListener('DOMContentLoaded', startWatching, { once: true });
 } else {
-  analyzePage();
+  startWatching();
 }
 
-const observer = new MutationObserver(() => {
-  const data = extractTravelData();
-  if (data?.price) analyzePage();
+window.addEventListener('pagehide', () => {
+  if (pollIntervalId) clearInterval(pollIntervalId);
+  mutationObserver?.disconnect();
 });
-
-observer.observe(document.documentElement, { childList: true, subtree: true });
